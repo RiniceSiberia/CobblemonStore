@@ -1,0 +1,12 @@
+{
+    "msg.cobblemon_store_err": "发生错误.错误时间:%1$s,请截图此信息并与管理联系",
+    "msg.cobblemon_store.cant_buy": "无法购买该商品!",
+    "msg.cobblemon_store.sold_out":"商品已售罄!",
+    "msg.cobblemon_store.inventory_full":"请腾出背包再操作!",
+    "msg.cobblemon_store.not_enough_money":"您的货币不够!",
+
+    "msg.cobblemon_store.purchasing.gts_money": "获得了 $%1$s!",
+    "msg.cobblemon_store.cost.gts_money": "花费了:$%1$s,",
+    "msg.cobblemon_store.purchasing.item": "获得了 %2$s 份 %1$s!",
+    "msg.cobblemon_store.cost.item": "付出了 %2$s 份 %1$s, "
+}
