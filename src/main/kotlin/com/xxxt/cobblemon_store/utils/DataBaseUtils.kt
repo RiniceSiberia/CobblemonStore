@@ -12,12 +12,6 @@ object DataBaseUtils {
     val DB_NAME = Config.db_name
 
 
-    val jsonConfig = Json {
-        prettyPrint = true
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-    }
-
     val db = lazy {
         Database.connect(
             url = Config.mysql_path + DB_NAME + Config.extra_options,

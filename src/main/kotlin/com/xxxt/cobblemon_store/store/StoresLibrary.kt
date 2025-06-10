@@ -2,10 +2,16 @@ package com.xxxt.cobblemon_store.store
 
 import com.xxxt.cobblemon_store.database.dao.StoreEntity
 import com.xxxt.cobblemon_store.database.table.StoresTable
+import com.xxxt.cobblemon_store.database.table.TradesTable
 import com.xxxt.cobblemon_store.utils.DataBaseUtils
+import com.xxxt.cobblemon_store.utils.jsonConfig
+import kotlinx.serialization.json.encodeToJsonElement
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchUpsert
+import org.jetbrains.exposed.sql.json.json
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.upsert
 
 object StoresLibrary : MutableMap<Int, Store> {
 
@@ -53,10 +59,24 @@ object StoresLibrary : MutableMap<Int, Store> {
 
     fun save(){
         transaction(DataBaseUtils.db.value) {
-            StoresTable.batchInsert(
-                data = this@StoresLibrary
-            ){ item ->
+            StoresTable.batchUpsert(
+                data = stores.values,
+                onUpdateExclude = listOf(StoresTable.id)
+            ) { store ->
+                this[StoresTable.name] = store.name
+                this[StoresTable.description] = store.description
+            }
 
+            TradesTable.batchUpsert(
+                data = stores.values.map {
+                    it.id to it.trades
+                },
+                onUpdateExclude = listOf(TradesTable.id)
+            ){ (storeId,trades) ->
+                trades.forEach { t ->
+                    this[TradesTable.store] = storeId
+                    this[TradesTable.content] = t
+                }
             }
         }
     }

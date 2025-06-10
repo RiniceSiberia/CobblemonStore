@@ -23,6 +23,14 @@ import java.util.UUID
 
 val LOGGER: org.slf4j.Logger = LogUtils.getLogger()
 
+
+
+val jsonConfig = Json {
+    prettyPrint = true
+    encodeDefaults = true
+    ignoreUnknownKeys = true
+}
+
 object UUIDSerializer : KSerializer<UUID> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("uuid", PrimitiveKind.STRING)
 
