@@ -48,6 +48,7 @@ class StoreMenu(
                             18 + r * PER_SLOT_OCCUPY
                         ){player ->
 
+
                         }
                     )
                 }else if (slotIndex == nextPageSlotIndex){
@@ -58,6 +59,7 @@ class StoreMenu(
                             8 + c * PER_SLOT_OCCUPY,
                             18 + r * PER_SLOT_OCCUPY
                         ){player ->
+
 
                         }
                     )

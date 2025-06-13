@@ -1,6 +1,7 @@
 package com.xxxt.cobblemon_store
 
 import com.mojang.logging.LogUtils
+import com.xxxt.cobblemon_store.event.StoreEvents
 import com.xxxt.cobblemon_store.store.StoresLibrary
 import com.xxxt.cobblemon_store.utils.JsonFileUtils
 import net.neoforged.bus.api.IEventBus
@@ -21,6 +22,7 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
 
         with(NeoForge.EVENT_BUS){
             addListener(Registrations::addBlockToTab)
+            addListener(StoreEvents::onTooltipsEvent)
         }
     }
 

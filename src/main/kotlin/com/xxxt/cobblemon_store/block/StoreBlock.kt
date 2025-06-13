@@ -46,13 +46,21 @@ class StoreBlock(
         if (level.isClientSide) {
             return InteractionResult.SUCCESS
         } else {
-            player.openMenu(state.getMenuProvider(level, pos))
-            return InteractionResult.CONSUME
+            if (player.isCreative && player.isCrouching){
+                player.openMenu(state.g)
+                return InteractionResult.CONSUME
+            }else if (store != null){
+                player.openMenu(
+                    StoreMenuProvider(store!!,0))
+                { buf ->
+                    buf.writeInt(0)
+                    buf.writeInt(store!!.id)
+                }
+                return InteractionResult.CONSUME
+            }else{
+                return InteractionResult.SUCCESS
+            }
         }
     }
 
-
-    override fun getMenuProvider(state: BlockState, level: Level, pos: BlockPos): MenuProvider {
-        return StoreMenuProvider()
-    }
 }

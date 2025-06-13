@@ -5,19 +5,16 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.MenuProvider
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.inventory.AbstractContainerMenu
 
 data class StoreMenuProvider(
-    val createMenu : (Int, Inventory, Player) -> AbstractContainerMenu,
     val store : Store,
-    val pageIndex : Int = 0
+    val pageIndex : Int
 ) :MenuProvider{
     override fun createMenu(
         containerId: Int,
         inv: Inventory,
         player: Player
-    ): AbstractContainerMenu? {
-
+    ): StoreMenu {
         return StoreMenu(
             containerId = containerId,
             pageIndex = pageIndex,
@@ -25,8 +22,6 @@ data class StoreMenuProvider(
             store = store
         )
     }
-
-
 
     override fun getDisplayName(): Component
     = Component.translatable("menu.cobblemon_store.store")

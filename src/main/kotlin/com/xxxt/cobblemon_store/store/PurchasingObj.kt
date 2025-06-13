@@ -21,7 +21,9 @@ sealed class PurchasingObj<T: Any>{
 
     abstract fun purchasing(player : Player)
 
-    abstract fun payComponent() : MutableComponent
+    abstract fun purchasingMsgComponent() : MutableComponent
+
+    abstract fun purchasingTooltipComponent() : MutableComponent
 }
 
 @Serializable
@@ -35,8 +37,16 @@ open class ItemPurchasingObj(
         ItemHandlerHelper.giveItemToPlayer(player,stack)
     }
 
-    override fun payComponent(): MutableComponent {
+    override fun purchasingMsgComponent(): MutableComponent {
         return Component.translatable("msg.cobblemon_store.purchasing.item",stack.hoverName,stack.count)
+    }
+
+    override fun purchasingTooltipComponent(): MutableComponent {
+        return Component.translatable(
+            "msg.cobblemon_store.slot.purchasing.item",
+            stack.displayName,
+            stack.count
+        )
     }
 }
 
@@ -51,7 +61,14 @@ class GTSMoney(
         PluginUtils.addMoney(player, value)
     }
 
-    override fun payComponent(): MutableComponent {
+    override fun purchasingMsgComponent(): MutableComponent {
         return Component.translatable("msg.cobblemon_store.purchasing.gts_money", String.format("%.2f", value))
+    }
+
+    override fun purchasingTooltipComponent(): MutableComponent {
+        return Component.translatable(
+            "msg.cobblemon_store.slot.purchasing.gts_money",
+            String.format("%.2f", value)
+        )
     }
 }
