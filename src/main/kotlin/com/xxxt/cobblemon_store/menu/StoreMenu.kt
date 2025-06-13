@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerLevelAccess
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.levelgen.SurfaceRules.state
 
 class StoreMenu(
     containerId : Int,
@@ -39,39 +40,23 @@ class StoreMenu(
         for (r in 0 until ROW) {
             for (c in 0 until COL){
                 val slotIndex = c + r * COL
-                if (slotIndex == prePageSlotIndex){
-                    this.addSlot(
-                        StoreSlot(
-                            tradeContainers,
-                            slotIndex,
-                            8 + c * PER_SLOT_OCCUPY,
-                            18 + r * PER_SLOT_OCCUPY
-                        ){player ->
-
-
-                        }
-                    )
-                }else if (slotIndex == nextPageSlotIndex){
-                    this.addSlot(
-                        StoreSlot(
-                            tradeContainers,
-                            slotIndex,
-                            8 + c * PER_SLOT_OCCUPY,
-                            18 + r * PER_SLOT_OCCUPY
-                        ){player ->
-
-
-                        }
-                    )
-                }else if (slotIndex in 0 until ROW * COL){
+                if (slotIndex in 0 until ROW * COL){
                     val tradeIndex = getTradeIndex(slotIndex)
                     val trade = store.trades.getOrNull(tradeIndex)
-                    if (trade != null
-                        && slotIndex != prePageSlotIndex
-                        && slotIndex != nextPageSlotIndex) {
+                    if (trade != null) {
                         tradeContainers.setItem(
                             tradeIndex,
                             trade.showedItemStack
+                        )
+                        this.addSlot(
+                            StoreSlot(
+                                tradeContainers,
+                                slotIndex,
+                                8 + c * PER_SLOT_OCCUPY,
+                                18 + r * PER_SLOT_OCCUPY,
+                            ){player ->
+                                trade.trade(player)
+                            }
                         )
                     }
                 }
@@ -104,41 +89,8 @@ class StoreMenu(
     }
 
 
-    fun getTradeIndex(slotIndex : Int) : Int{
-        var fixedValue = 0
-        if (pageIndex * ROW * COL > 0)
-            fixedValue -= pageIndex * functionalButtonNum
-        if (slotIndex >= prePageSlotIndex) fixedValue--
-        if (slotIndex >= nextPageSlotIndex) fixedValue--
-        fixedValue += ROW * COL * pageIndex
-        return fixedValue + slotIndex
-    }
+    fun getTradeIndex(slotIndex : Int) : Int = pageIndex * ROW * COL + slotIndex
 
-    val prePageSlotIndex : Int
-        get(){
-            return if (pageIndex !in 1 until store.trades.size){
-                -1
-            }else{
-                COL * (ROW - 1)
-            }
-        }
-
-    val nextPageSlotIndex : Int
-        get(){
-            return if (pageIndex !in 0 until store.trades.size-1){
-                -1
-            }else{
-                COL * ROW - 1
-            }
-        }
-
-    val functionalButtonNum : Int
-        get(){
-            return listOf(
-                ::prePageSlotIndex,
-                ::nextPageSlotIndex
-            ).count{ it() >= 0 }
-        }
 
     override fun quickMoveStack(
         p0: Player,

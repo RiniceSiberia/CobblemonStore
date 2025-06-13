@@ -22,5 +22,7 @@
     "item.cobblemon_store.sell_menu.slot.gts_money": "%1$s金币",
 
     "item.cobblemon_store.sell_menu.slot.sell" : "出售",
-    "item.cobblemon_store.sell_menu.slot.buy" : "收购"
+    "item.cobblemon_store.sell_menu.slot.buy" : "收购",
+
+    "screen.cobblemon_store.choosing.title": "请选择商店"
 }
