@@ -7,6 +7,18 @@
 
     "msg.cobblemon_store.purchasing.gts_money": "获得了 $%1$s!",
     "msg.cobblemon_store.cost.gts_money": "花费了:$%1$s,",
+    "msg.cobblemon_store.slot.cost.gts_money": "需要花费:$%1$s,",
     "msg.cobblemon_store.purchasing.item": "获得了 %2$s 份 %1$s!",
-    "msg.cobblemon_store.cost.item": "付出了 %2$s 份 %1$s, "
+    "msg.cobblemon_store.cost.item": "付出了 %2$s 份 %1$s, ",
+    "msg.cobblemon_store.slot.cost.item": "需要支付 %2$s 份 %1$s, ",
+
+
+    "item.cobblemon_store.sell_menu.slot.name" : "[%1$s]:%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.global" : "当前存货:%1$s/%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.simple_single_player" : "当前玩家可购买数量:%1$s/%2$s",
+
+    "item.cobblemon_store.sell_menu.slot.gts_money": "%1$s金币",
+
+    "item.cobblemon_store.sell_menu.slot.sell" : "出售",
+    "item.cobblemon_store.sell_menu.slot.buy" : "收购"
 }

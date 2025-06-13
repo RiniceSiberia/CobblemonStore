@@ -8,5 +8,11 @@
   "msg.cobblemon_store.purchasing.gts_money": "You received $%1$s!",
   "msg.cobblemon_store.cost.gts_money": "You spent $%1$s.",
   "msg.cobblemon_store.purchasing.item": "You obtained %2$s x %1$s!",
-  "msg.cobblemon_store.cost.item": "You spent %2$s x %1$s."
+  "msg.cobblemon_store.cost.item": "You spent %2$s x %1$s.",
+
+  "item.cobblemon_store.sell_menu.slot.name" : "[%1$s]:%2$s",
+  "item.cobblemon_store.sell_menu.slot.cost" : "Requires: %1$s * %2$s to purchase",
+  "item.cobblemon_store.sell_menu.slot.reserve.global" : "Current stock: %1$s/%2$s",
+  "item.cobblemon_store.sell_menu.slot.reserve.simple_single_player" : "Player's purchase limit: %1$s/%2$s"
+
 }

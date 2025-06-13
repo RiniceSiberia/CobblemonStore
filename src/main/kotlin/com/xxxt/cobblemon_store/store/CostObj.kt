@@ -28,7 +28,9 @@ sealed class CostObj<C : Comparable<C>> {
 
     abstract fun pay(player: Player) : Boolean
 
-    abstract fun costComponent() : MutableComponent
+    abstract fun costMsgComponent() : MutableComponent
+
+    abstract fun costToolTipComponent() : MutableComponent
 }
 
 @Serializable
@@ -53,8 +55,12 @@ class GTSMoneyCostObj(
         return PluginUtils.minusMoney(player,price)
     }
 
-    override fun costComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.money",String.format("%.2f", price))
+    override fun costMsgComponent(): MutableComponent {
+        return Component.translatable("msg.cobblemon_store.cost.gts_money",String.format("%.2f", price))
+    }
+
+    override fun costToolTipComponent(): MutableComponent {
+        return Component.translatable("msg.cobblemon_store.slot.cost.gts_money",String.format("%.2f", price))
     }
 }
 
@@ -63,7 +69,7 @@ class GTSMoneyCostObj(
  */
 @Serializable
 class ItemCostObj(
-    val itemStack: ItemStack,
+    val stack: ItemStack,
 ) : CostObj<Int>(){
 
     override val clazz: KClass<Int>
@@ -71,7 +77,7 @@ class ItemCostObj(
 
     override fun enough(player: Player): Boolean {
         return player.inventory.items.any {
-            it.item == itemStack.item
+            it.item == stack.item
         }
     }
 
@@ -79,13 +85,13 @@ class ItemCostObj(
         if (player.isCreative) return true
 
         val targets = player.inventory.items.filter {
-            it.item == itemStack.item
+            it.item == stack.item
         }
-        if (targets.sumOf { it.count } < itemStack.count) {
+        if (targets.sumOf { it.count } < stack.count) {
             player.sendSystemMessage(Component.translatable("msg.cobblemon_store.not_enough_money"))
             return false
         }
-        var countVariable = itemStack.count
+        var countVariable = stack.count
         var repeatNum = 0
         while(countVariable>= 0){
             val target = targets.firstOrNull{it.count > 0}?:return false.also {
@@ -93,7 +99,7 @@ class ItemCostObj(
                     Component.translatable("cobblemon_store_err", Calendar.getInstance())
                 )
                 LOGGER.error(
-                    "Player ${player.name} attempted to pay $countVariable of ${this.itemStack.displayName}," +
+                    "Player ${player.name} attempted to pay $countVariable of ${this.stack.displayName}," +
                             " but only ${targets.sumOf { it.count }} were available in inventory.")
             }
             val shrinkCount = max(countVariable,target.count)
@@ -108,8 +114,12 @@ class ItemCostObj(
         return true
     }
 
-    override fun costComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.item", itemStack.hoverName,itemStack.count)
+    override fun costMsgComponent(): MutableComponent {
+        return Component.translatable("msg.cobblemon_store.cost.item", stack.hoverName,stack.count)
+    }
+
+    override fun costToolTipComponent(): MutableComponent {
+        return Component.translatable("msg.cobblemon_store.slot.cost.item", stack.hoverName,stack.count)
     }
 }
 

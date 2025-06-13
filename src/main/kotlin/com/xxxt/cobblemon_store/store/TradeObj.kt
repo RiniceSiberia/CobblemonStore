@@ -8,17 +8,25 @@ import com.xxxt.cobblemon_store.utils.ItemStackSerializer
 import com.xxxt.cobblemon_store.utils.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import net.minecraft.ChatFormatting
+import net.minecraft.core.component.DataComponentPatch
+import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import java.util.*
 
 @Serializable
 class Trade(
-    val index : Int,
+    val storeIndex : Int,
     val cost : CostObj<*>?,
     val purchasing : PurchasingObj<*>,
     val reserve : Reserve?
 ){
+    val supStore
+        get() = StoresLibrary[storeIndex]
 
     fun trade( player: Player) : Boolean{
         if (cost != null && !cost.enough(player)){
@@ -35,14 +43,59 @@ class Trade(
         player.sendSystemMessage(
             purchasing.payComponent().also {
                 if (cost!=null)
-                    it.append(cost.costComponent())
+                    it.append(cost.costMsgComponent())
             }
         )
         return true
     }
 
+    fun removeIt(){
+        supStore?.trades?.remove(this)
+    }
+
+    fun getShowedItemStack(player: Player): ItemStack {
+            if (purchasing is ItemPurchasingObj){
+                return purchasing.stack.copy().also {
+                    it.set(DataComponents.CUSTOM_NAME,
+                        Component.translatable(
+                            "item.cobblemon_store.sell_menu.slot.name",
+                            Component.translatable("item.cobblemon_store.sell_menu.slot.sell"),
+                            purchasing.stack.displayName
+                        ).withStyle(ChatFormatting.GOLD).also { it ->
+                            if (cost!=null){
+                                it.append(
+                                    cost.costToolTipComponent()
+                                        .withStyle(ChatFormatting.LIGHT_PURPLE)
+                                )
+                            }
+                            if (reserve != null){
+                                it.append(
+                                    reserve.getTooltipComponent(player)
+                                )
+                            }
+                        }
+                    )
+                }
+            }else if (cost is ItemCostObj){
+                return cost.stack.copy().also {
+                    it.set(DataComponents.CUSTOM_NAME,
+                        Component.translatable(
+                            "item.cobblemon_store.sell_menu.slot.name",
+                            Component.translatable("item.cobblemon_store.sell_menu.slot.buy"),
+                            Component.translatable(
+                                "item.cobblemon_store.sell_menu.slot.gts_money",
+                                purchasing
+                            )
+                        )
 
 
+
+                        )
+                }
+
+            }
+            return ItemStack.EMPTY
+        }
 }
 
 
@@ -56,6 +109,8 @@ sealed interface Reserve{
     fun consume(player: Player)
 
     fun restock()
+
+    fun getTooltipComponent(player: Player) : MutableComponent
 }
 
 @Serializable
@@ -76,6 +131,18 @@ class GlobalReserve(
         sales = 0
     }
 
+    override fun getTooltipComponent(player: Player): MutableComponent {
+        return Component.translatable(
+            "item.cobblemon_store.sell_menu.slot.reserve.global",
+            limit-sales,
+            limit
+            ).also {
+                if (sales >= limit){
+                    it.withStyle(ChatFormatting.RED)
+                }
+        }
+    }
+
 }
 
 @Serializable
@@ -93,5 +160,17 @@ open class SimpleSingleReserve(
 
     override fun restock() {
         playerBought.clear()
+    }
+
+    override fun getTooltipComponent(player: Player): MutableComponent {
+        return Component.translatable(
+            "item.cobblemon_store.sell_menu.slot.reserve.simple_single_player",
+            (limit - playerBought.getOrDefault(player.uuid, 0)),
+            limit
+        ).also {
+            if (limit <= playerBought.getOrDefault(player.uuid, 0)){
+                it.withStyle(ChatFormatting.RED)
+            }
+        }
     }
 }

@@ -1,35 +1,19 @@
 package com.xxxt.cobblemon_store.utils
 
 import com.mojang.logging.LogUtils
-import com.mojang.serialization.Codec
 import com.mojang.serialization.JsonOps
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
-import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
-import java.util.UUID
+import java.util.*
 
 val LOGGER: org.slf4j.Logger = LogUtils.getLogger()
 
-
-
-val jsonConfig = Json {
-    prettyPrint = true
-    encodeDefaults = true
-    ignoreUnknownKeys = true
-}
 
 object UUIDSerializer : KSerializer<UUID> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("uuid", PrimitiveKind.STRING)
@@ -91,19 +75,4 @@ object ItemStackSerializer : KSerializer<ItemStack>{
             }.orElseThrow()
     }
 }
-
-object ComponentSerializer : KSerializer<Component>{
-
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("component", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Component) {
-
-    }
-
-
-
-
-
-}
-
 

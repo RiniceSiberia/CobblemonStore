@@ -1,26 +1,23 @@
 package com.xxxt.cobblemon_store.store
 
-import com.xxxt.cobblemon_store.database.dao.StoreEntity
-import com.xxxt.cobblemon_store.database.table.StoresTable
-import com.xxxt.cobblemon_store.database.table.TradesTable
 import com.xxxt.cobblemon_store.utils.DataBaseUtils
-import com.xxxt.cobblemon_store.utils.jsonConfig
-import kotlinx.serialization.json.encodeToJsonElement
-import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.batchUpsert
-import org.jetbrains.exposed.sql.json.json
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.upsert
+import com.xxxt.cobblemon_store.utils.JsonFileUtils
+import java.util.concurrent.ConcurrentHashMap
 
-object StoresLibrary : MutableMap<Int, Store> {
+object StoresLibrary : ConcurrentHashMap<Int, Store>() {
 
-    val stores = mutableMapOf<Int, Store>()
+    init {
+        load()
+    }
+
+    private fun readResolve(): Any = StoresLibrary
+
+    private val stores = ConcurrentHashMap<Int, Store>()
 
     override val size: Int
         get() = stores.size
 
-    override val keys: MutableSet<Int>
+    override val keys: KeySetView<Int?, Store?>
         get() = stores.keys
     override val values: MutableCollection<Store>
         get() = stores.values
@@ -46,38 +43,26 @@ object StoresLibrary : MutableMap<Int, Store> {
 
     override fun clear() = stores.clear()
 
-    fun register(){
-        DataBaseUtils.register()
-        transaction(DataBaseUtils.db.value) {
-            StoreEntity.all().map {
-                it.id.value to it.toBO()
-            }
-        }.also {
-            this.putAll(it)
+
+    fun load(): Boolean{
+        return if (DataBaseUtils.loadByDataBase()){
+            true
+        }else if (JsonFileUtils.loadByJson()){
+            true
+        }else{
+            false
         }
     }
 
-    fun save(){
-        transaction(DataBaseUtils.db.value) {
-            StoresTable.batchUpsert(
-                data = stores.values,
-                onUpdateExclude = listOf(StoresTable.id)
-            ) { store ->
-                this[StoresTable.name] = store.name
-                this[StoresTable.description] = store.description
-            }
-
-            TradesTable.batchUpsert(
-                data = stores.values.map {
-                    it.id to it.trades
-                },
-                onUpdateExclude = listOf(TradesTable.id)
-            ){ (storeId,trades) ->
-                trades.forEach { t ->
-                    this[TradesTable.store] = storeId
-                    this[TradesTable.content] = t
-                }
-            }
+    fun save(): Boolean{
+        return if (DataBaseUtils.saveByDataBase()){
+            true
+        }else if (JsonFileUtils.saveByJson()){
+            true
+        }else{
+            false
         }
     }
+
+    fun register(){}
 }
