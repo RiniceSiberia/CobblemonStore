@@ -3,9 +3,8 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.78'
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id("com.gradleup.shadow") version "9.0.0-beta16" // 最新 beta 版本已支持 Java 21+
     id "org.jetbrains.kotlin.jvm" version "2.1.20"
-    id "org.jetbrains.kotlin.plugin.serialization" version "2.1.20"
 }
 
 
@@ -159,31 +158,12 @@ configurations {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
-    implementation("mysql:mysql-connector-java:8.0.33")
-
-    implementation("org.jetbrains.exposed:exposed-core:0.48.0")
-    implementation("org.jetbrains.exposed:exposed-crypt:0.48.0")
-    implementation("org.jetbrains.exposed:exposed-dao:0.48.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.48.0")
-
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.48.0")
-
-    implementation("org.jetbrains.exposed:exposed-json:0.48.0")
-    implementation("org.jetbrains.exposed:exposed-money:0.48.0")
 
     // NEOFORGE
     implementation 'thedarkcolour:kotlinforforge-neoforge:5.8.0'
     implementation('io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT')
     implementation "curse.maven:architectury-api-419699:5786327"
-//    implementation "curse.maven:cobblemon-687131:6125026"
-//    implementation "curse.maven:radical-cobblemon-trainers-api-1152792:6561417"
-//    implementation "curse.maven:rctmod-1009534:6526724"
-
-
-//    implementation "curse.maven:jei-238222:6577302"
-//    implementation "curse.maven:journeymap-32274:6550378"
 
 }
 

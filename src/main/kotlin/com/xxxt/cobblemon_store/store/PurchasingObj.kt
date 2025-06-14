@@ -1,12 +1,10 @@
-@file:UseSerializers(
-    ItemStackSerializer::class
-)
 package com.xxxt.cobblemon_store.store
 
-import com.xxxt.cobblemon_store.utils.ItemStackSerializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.mojang.serialization.JsonOps
+import com.xxxt.cobblemon_store.CobblemonStore.Companion.LOGGER
 import com.xxxt.cobblemon_store.utils.PluginUtils
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
@@ -14,7 +12,6 @@ import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.items.ItemHandlerHelper
 import kotlin.reflect.KClass
 
-@Serializable
 sealed class PurchasingObj<T: Any>{
 
     abstract val clazz : KClass<out T>
@@ -24,9 +21,23 @@ sealed class PurchasingObj<T: Any>{
     abstract fun purchasingMsgComponent() : MutableComponent
 
     abstract fun purchasingTooltipComponent() : MutableComponent
+
+    abstract fun serialize() : JsonElement
+
+    companion object{
+        fun deserialize(json : JsonObject) : PurchasingObj<*>?{
+            if (json.has("type") && json.get("type").isJsonPrimitive){
+                val type = json.get("type").asString
+                when (json.asJsonObject.get("type").asString) {
+                    "item_purchasing" -> return ItemPurchasingObj.deserialize(json)
+                    "money_purchasing" -> return MoneyPurchasingObj.deserialize(json)
+                }
+            }
+            return null
+        }
+    }
 }
 
-@Serializable
 open class ItemPurchasingObj(
     open val stack : ItemStack
 ) : PurchasingObj<ItemStack>(){
@@ -48,10 +59,35 @@ open class ItemPurchasingObj(
             stack.count
         )
     }
+
+    override fun serialize(): JsonElement {
+        return JsonObject().apply {
+            addProperty("type","item_purchasing")
+            val nbt = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE,this@ItemPurchasingObj.stack)
+                .resultOrPartial{err ->
+                    LOGGER.error("item stack序列化出错:${err}")
+                }.orElseThrow()
+            add("nbt",nbt)
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : ItemPurchasingObj?{
+            return try {
+                val stack = ItemStack.CODEC.parse(JsonOps.INSTANCE,json.getAsJsonObject("nbt"))
+                    .resultOrPartial{err ->
+                        LOGGER.error("item stack反序列化出错:${err}")
+                    }.orElseThrow()
+                ItemPurchasingObj(stack)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 }
 
-@Serializable
-class GTSMoney(
+class MoneyPurchasingObj(
     val value : Double
 ) : PurchasingObj<Double>(){
     override val clazz: KClass<out Double>
@@ -70,5 +106,25 @@ class GTSMoney(
             "msg.cobblemon_store.slot.purchasing.gts_money",
             String.format("%.2f", value)
         )
+    }
+
+
+    override fun serialize(): JsonElement {
+        return JsonObject().apply {
+            addProperty("type","money_purchasing")
+            addProperty("value",value)
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : MoneyPurchasingObj?{
+            return try {
+                val value = json.getAsJsonPrimitive("value").asDouble
+                MoneyPurchasingObj(value)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
     }
 }

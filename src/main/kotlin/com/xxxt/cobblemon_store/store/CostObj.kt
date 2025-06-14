@@ -1,16 +1,11 @@
-@file:UseSerializers(
-    ResourceLocationSerializer::class,
-    ItemStackSerializer::class
-)
 
 package com.xxxt.cobblemon_store.store
 
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.mojang.logging.LogUtils
-import com.xxxt.cobblemon_store.utils.ItemStackSerializer
+import com.mojang.serialization.JsonOps
 import com.xxxt.cobblemon_store.utils.PluginUtils
-import com.xxxt.cobblemon_store.utils.ResourceLocationSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.level.ServerPlayer
@@ -20,7 +15,6 @@ import java.util.*
 import kotlin.math.max
 import kotlin.reflect.KClass
 
-@Serializable
 sealed class CostObj<C : Comparable<C>> {
     abstract val clazz : KClass<C>
 
@@ -31,10 +25,31 @@ sealed class CostObj<C : Comparable<C>> {
     abstract fun costMsgComponent() : MutableComponent
 
     abstract fun costToolTipComponent() : MutableComponent
+
+    abstract fun serialize() : JsonElement
+
+    companion object{
+        fun deserialize(json: JsonObject) : CostObj<*>?{
+            return try {
+                val type = json.asJsonObject.get("type").asString
+                when(type){
+                    "money_cost" ->{
+                        MoneyCostObj.deserialize(json)
+                    }
+                    "item_cost" ->{
+                        ItemCostObj.deserialize(json)
+                    }
+                    else -> null
+                }
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 }
 
-@Serializable
-class GTSMoneyCostObj(
+class MoneyCostObj(
     val price : Double
 ) : CostObj<Double>(){
 
@@ -62,12 +77,30 @@ class GTSMoneyCostObj(
     override fun costToolTipComponent(): MutableComponent {
         return Component.translatable("msg.cobblemon_store.slot.cost.gts_money",String.format("%.2f", price))
     }
+
+    override fun serialize(): JsonElement {
+        return JsonObject().apply {
+            addProperty("type","money_cost")
+            addProperty("price",price)
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : MoneyCostObj?{
+            return try {
+                val price = json.getAsJsonPrimitive("price").asDouble
+                MoneyCostObj(price)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 }
 
 /**
  * 不支持nbt检测
  */
-@Serializable
 class ItemCostObj(
     val stack: ItemStack,
 ) : CostObj<Int>(){
@@ -120,6 +153,32 @@ class ItemCostObj(
 
     override fun costToolTipComponent(): MutableComponent {
         return Component.translatable("msg.cobblemon_store.slot.cost.item", stack.hoverName,stack.count)
+    }
+
+    override fun serialize(): JsonElement {
+        return JsonObject().apply {
+            addProperty("type","item_cost")
+            val nbt = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE,this@ItemCostObj.stack)
+                .resultOrPartial{err ->
+                    LOGGER.error("item stack序列化出错:${err}")
+                }.orElseThrow()
+            add("nbt",nbt)
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : ItemCostObj?{
+            return try {
+                val stack = ItemStack.CODEC.parse(JsonOps.INSTANCE,json.getAsJsonObject("nbt"))
+                    .resultOrPartial{err ->
+                        LOGGER.error("item stack反序列化出错:${err}")
+                    }.orElseThrow()
+                ItemCostObj(stack)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
     }
 }
 

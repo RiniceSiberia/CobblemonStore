@@ -1,13 +1,8 @@
-@file:UseSerializers(
-    UUIDSerializer::class,
-    ItemStackSerializer::class
-)
 package com.xxxt.cobblemon_store.store
 
-import com.xxxt.cobblemon_store.utils.ItemStackSerializer
-import com.xxxt.cobblemon_store.utils.UUIDSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -18,7 +13,6 @@ import java.util.UUID
 /**
  * 实现该接口为有不同程度上的存货上限
  */
-@Serializable
 sealed interface Reserve{
     fun couldBuy(player: Player) : Boolean
 
@@ -27,9 +21,23 @@ sealed interface Reserve{
     fun restock()
 
     fun getTooltipComponent(player: Player) : MutableComponent
+
+    fun serialize() : JsonElement
+
+    companion object{
+        fun deserialize(json : JsonObject) : Reserve?{
+            if (json.has("type") && json.get("type").isJsonPrimitive){
+                val type = json.get("type").asString
+                when (type) {
+                    "global_reserve" -> return GlobalReserve.deserialize(json)
+                    "simple_single_reserve" -> return SimpleSingleReserve.deserialize(json)
+                }
+            }
+            return null
+        }
+    }
 }
 
-@Serializable
 class GlobalReserve(
     val limit : Int,
     var sales : Int = 0,
@@ -52,16 +60,36 @@ class GlobalReserve(
             "item.cobblemon_store.sell_menu.slot.reserve.global",
             limit-sales,
             limit
-            ).also {
+            ).apply {
                 if (sales >= limit){
-                    it.withStyle(ChatFormatting.RED)
+                    withStyle(ChatFormatting.RED)
                 }
         }
     }
 
+    override fun serialize(): JsonElement {
+        return JsonObject ().apply{
+            addProperty("type", "global_reserve")
+            addProperty("limit", limit)
+            addProperty("sales", sales)
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : GlobalReserve?{
+            return try {
+                GlobalReserve(
+                    limit = json.get("limit").asInt,
+                    sales = json.get("sales").asInt
+                )
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 }
 
-@Serializable
 open class SimpleSingleReserve(
     open val limit : Int,
     val playerBought : MutableMap<UUID, Int> = mutableMapOf()
@@ -83,9 +111,40 @@ open class SimpleSingleReserve(
             "item.cobblemon_store.sell_menu.slot.reserve.simple_single_player",
             (limit - playerBought.getOrDefault(player.uuid, 0)),
             limit
-        ).also {
+        ).apply {
             if (limit <= playerBought.getOrDefault(player.uuid, 0)){
-                it.withStyle(ChatFormatting.RED)
+                withStyle(ChatFormatting.RED)
+            }
+        }
+    }
+
+    override fun serialize(): JsonElement {
+        return JsonObject ().apply{
+            addProperty("type", "simple_single_reserve")
+            addProperty("limit", limit)
+            add("player_bought", JsonArray().apply {
+                playerBought.forEach {
+                    add(JsonObject().apply{
+                        addProperty("uuid", it.key.toString())
+                        addProperty("value", it.value)
+                    })
+                }
+            })
+        }
+    }
+
+    companion object{
+        fun deserialize(json : JsonObject) : SimpleSingleReserve?{
+            return try {
+                SimpleSingleReserve(
+                    limit = json.get("limit").asInt,
+                    playerBought = json.getAsJsonArray("player_bought").map { it.asJsonObject }.associate {
+                        UUID.fromString(it.get("uuid").asString) to it.get("value").asInt
+                    }.toMutableMap()
+                )
+            }catch (e : Throwable) {
+                e.printStackTrace()
+                null
             }
         }
     }

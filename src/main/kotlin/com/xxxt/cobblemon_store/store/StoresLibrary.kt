@@ -1,6 +1,5 @@
 package com.xxxt.cobblemon_store.store
 
-import com.xxxt.cobblemon_store.utils.DataBaseUtils
 import com.xxxt.cobblemon_store.utils.JsonFileUtils
 import java.util.concurrent.ConcurrentHashMap
 
@@ -45,9 +44,7 @@ object StoresLibrary : ConcurrentHashMap<Int, Store>() {
 
 
     fun load(): Boolean{
-        return if (DataBaseUtils.loadByDataBase()){
-            true
-        }else if (JsonFileUtils.loadByJson()){
+        return if (JsonFileUtils.loadByJson()){
             true
         }else{
             false
@@ -55,9 +52,7 @@ object StoresLibrary : ConcurrentHashMap<Int, Store>() {
     }
 
     fun save(): Boolean{
-        return if (DataBaseUtils.saveByDataBase()){
-            true
-        }else if (JsonFileUtils.saveByJson()){
+        return if (JsonFileUtils.saveByJson()){
             true
         }else{
             false

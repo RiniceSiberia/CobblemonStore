@@ -3,20 +3,15 @@ package com.xxxt.cobblemon_store
 import com.mojang.serialization.Codec
 import com.xxxt.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import com.xxxt.cobblemon_store.block.StoreBlock
-import com.xxxt.cobblemon_store.menu.StoreMenu
 import com.xxxt.cobblemon_store.menu.StoreMenuSupplier
-import com.xxxt.cobblemon_store.screen.StoreScreen
-import com.xxxt.cobblemon_store.store.Store
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.codec.ByteBufCodecs
-import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.flag.FeatureFlags
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.CreativeModeTabs
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent
-import net.neoforged.neoforge.network.IContainerFactory
 import net.neoforged.neoforge.registries.DeferredRegister
 import java.util.function.Supplier
 

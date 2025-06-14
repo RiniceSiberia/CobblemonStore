@@ -47,7 +47,7 @@ class StoreBlock(
             return InteractionResult.SUCCESS
         } else {
             if (player.isCreative && player.isCrouching){
-                player.openMenu(state.g)
+//                player.openMenu(state.g)
                 return InteractionResult.CONSUME
             }else if (store != null){
                 player.openMenu(

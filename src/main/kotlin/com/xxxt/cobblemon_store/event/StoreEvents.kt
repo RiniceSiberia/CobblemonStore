@@ -1,11 +1,12 @@
 package com.xxxt.cobblemon_store.event
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.xxxt.cobblemon_store.CobblemonStore.Companion.LOGGER
 import com.xxxt.cobblemon_store.Registrations
 import com.xxxt.cobblemon_store.store.ItemCostObj
 import com.xxxt.cobblemon_store.store.ItemPurchasingObj
 import com.xxxt.cobblemon_store.store.Trade
-import com.xxxt.cobblemon_store.utils.JsonFileUtils
-import com.xxxt.cobblemon_store.utils.LOGGER
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent
 
 object StoreEvents {
@@ -15,7 +16,7 @@ object StoreEvents {
         val json = stack.components.get(Registrations.TagTypes.TRADE_ITEM_TAG.get())
         val trade = json?.let {
             try {
-                JsonFileUtils.jsonConfig.decodeFromString(Trade.serializer(),json)
+                Trade.deserialize(Gson().fromJson(it, JsonObject::class.java))
             }catch (e : Exception){
                 LOGGER.error("deserialization err : ",e)
                 null

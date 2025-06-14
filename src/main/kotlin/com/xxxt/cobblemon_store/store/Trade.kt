@@ -1,22 +1,16 @@
-@file:UseSerializers(
-    UUIDSerializer::class,
-    ItemStackSerializer::class
-)
 package com.xxxt.cobblemon_store.store
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.xxxt.cobblemon_store.Registrations
-import com.xxxt.cobblemon_store.utils.ItemStackSerializer
 import com.xxxt.cobblemon_store.utils.JsonFileUtils
-import com.xxxt.cobblemon_store.utils.UUIDSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
-@Serializable
 class Trade(
     val storeIndex : Int,
     val cost : CostObj<*>?,
@@ -64,9 +58,8 @@ class Trade(
                     )
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
-                        JsonFileUtils.jsonConfig
-                            .encodeToString( this )
-                        )
+                        Gson().toJson(serialize())
+                    )
                 }
             }else if (cost is ItemCostObj){
                 return cost.stack.copy().also {
@@ -82,12 +75,46 @@ class Trade(
                     )
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
-                        JsonFileUtils.jsonConfig
-                            .encodeToString( this )
+                        Gson().toJson(serialize())
                     )
                 }
 
             }
             return ItemStack.EMPTY
         }
+
+    fun serialize() : JsonObject {
+        return JsonObject().apply {
+            addProperty("store_index",storeIndex)
+            add("cost",cost?.serialize()?:NULL_HOLDER)
+            add("purchasing",purchasing.serialize())
+            add("reserve",reserve?.serialize()?:NULL_HOLDER)
+        }
+    }
+
+    companion object{
+
+        val NULL_HOLDER : JsonObject = JsonObject().apply {
+            addProperty("type","null_holder")
+        }
+
+        fun deserialize(json: JsonObject) : Trade?{
+            return try {
+                val cost = json.get("cost").asJsonObject
+                val costNullFlag = cost == NULL_HOLDER
+                val purchasing = json.get("purchasing").asJsonObject
+                val reserve = json.get("reserve").asJsonObject
+                val reverseNullFlag = reserve == NULL_HOLDER
+                Trade(
+                    json.get("store_index").asInt,
+                    if (!costNullFlag) CostObj.deserialize(cost)!! else null,
+                    PurchasingObj.deserialize(purchasing)!!,
+                    if (!reverseNullFlag) Reserve.deserialize(reserve)!! else null
+                )
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
+            }
+        }
+    }
 }

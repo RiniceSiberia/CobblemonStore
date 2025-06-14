@@ -1,10 +1,11 @@
 package com.xxxt.cobblemon_store.utils
 
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.xxxt.cobblemon_store.CobblemonStore.Companion.LOGGER
 import com.xxxt.cobblemon_store.store.Store
 import com.xxxt.cobblemon_store.store.StoresLibrary
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.level.storage.LevelResource
 import java.nio.file.Files
@@ -14,12 +15,6 @@ import java.nio.file.StandardOpenOption
 
 object JsonFileUtils {
 
-    val jsonConfig = Json {
-        prettyPrint = true
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-    }
-
     lateinit var server: MinecraftServer
     val worldRoot: Path?
         get() = server.getWorldPath(LevelResource.ROOT).toAbsolutePath()
@@ -28,16 +23,17 @@ object JsonFileUtils {
 
     fun loadByJson() : Boolean{
         try {
-            assert(Files.exists(storesFile))
+            if (!Files.exists(storesFile)) {
+                saveByJson()
+            }
             val fileStr = Files.readString(storesFile)
-            val map = jsonConfig.decodeFromString(
-                MapSerializer(
-                    Int.serializer(),
-                    Store.serializer()),
-                fileStr)
-                StoresLibrary.clear()
-            map.forEach { key, value ->
-                StoresLibrary[key] = value
+            StoresLibrary.clear()
+            val arr = Gson().fromJson(fileStr, JsonArray::class.java)
+            for (j in arr.toList()){
+                val jo = j.asJsonObject
+                val store = Store.deserialize(jo.get("store").asJsonObject)
+                val index = jo.get("id").asInt
+                StoresLibrary[index] = store
             }
             return true
         }catch (e : Exception) {
@@ -50,10 +46,17 @@ object JsonFileUtils {
         try {
             Files.writeString(
                 storesFile,
-                jsonConfig.encodeToString(
-                    MapSerializer(Int.serializer(),Store.serializer()),
-                    StoresLibrary
-                ),
+                    StoresLibrary.let {
+                        val ja = JsonArray()
+
+                        it.forEach { it1->
+                            ja.add(JsonObject().apply {
+                                this.addProperty("id",it1.key)
+                                this.add("store",it1.value.serialize())
+                            })
+                        }
+                        Gson().toJson(ja)
+                    },
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING
             )
