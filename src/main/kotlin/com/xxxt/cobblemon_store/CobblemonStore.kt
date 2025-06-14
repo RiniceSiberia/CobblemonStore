@@ -8,6 +8,7 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 
@@ -19,18 +20,22 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
         NeoForge.EVENT_BUS.register(this)
         StoresLibrary.register()
         Registrations.register(modEventBus)
-
-        with(NeoForge.EVENT_BUS){
+        with(modEventBus) {
             addListener(Registrations::addBlockToTab)
+            addListener(Registrations.ScreenTypes::onRegisterScreen)
+        }
+
+        with(NeoForge.EVENT_BUS) {
             addListener(StoreEvents::onTooltipsEvent)
         }
+        // register our config
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.spec)
     }
 
     @SubscribeEvent
-    fun onServerStarting(event: ServerStartingEvent){
+    fun onServerStarting(event: ServerStartingEvent) {
         JsonFileUtils.server = event.server
     }
-
 
 
     companion object {
