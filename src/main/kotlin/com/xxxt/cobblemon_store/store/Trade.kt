@@ -1,10 +1,8 @@
 package com.xxxt.cobblemon_store.store
 
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.xxxt.cobblemon_store.Registrations
-import com.xxxt.cobblemon_store.utils.JsonFileUtils
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
@@ -12,13 +10,13 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
 class Trade(
-    val storeIndex : Int,
+    val storeId : String,
     val cost : CostObj<*>?,
     val purchasing : PurchasingObj<*>,
     val reserve : Reserve?
 ){
     val supStore
-        get() = StoresLibrary[storeIndex]
+        get() = StoresLibrary[storeId]
 
     fun trade( player: Player) : Boolean{
         if (cost != null && !cost.enough(player)){
@@ -85,7 +83,7 @@ class Trade(
 
     fun serialize() : JsonObject {
         return JsonObject().apply {
-            addProperty("store_index",storeIndex)
+            addProperty("store_id",storeId)
             add("cost",cost?.serialize()?:NULL_HOLDER)
             add("purchasing",purchasing.serialize())
             add("reserve",reserve?.serialize()?:NULL_HOLDER)
@@ -106,7 +104,7 @@ class Trade(
                 val reserve = json.get("reserve").asJsonObject
                 val reverseNullFlag = reserve == NULL_HOLDER
                 Trade(
-                    json.get("store_index").asInt,
+                    json.get("store_id").asString,
                     if (!costNullFlag) CostObj.deserialize(cost)!! else null,
                     PurchasingObj.deserialize(purchasing)!!,
                     if (!reverseNullFlag) Reserve.deserialize(reserve)!! else null

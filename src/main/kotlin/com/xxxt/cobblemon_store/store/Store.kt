@@ -2,14 +2,18 @@ package com.xxxt.cobblemon_store.store
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import java.util.function.IntFunction
 
 class Store(
-    val id : Int,
-    var name : String = "Store $id",
-    val description: String?,
+    val id : String,
+    var name : String,
+    val description: String? = null,
     val trades : MutableList<Trade> = mutableListOf()
 ) : MutableList<Trade> by trades{
 
+    override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
+        return super.toArray(generator)
+    }
 
     fun serialize() : JsonObject {
         val obj = JsonObject()
@@ -31,7 +35,7 @@ class Store(
                 }
             }
             return Store(
-                json.get("id").asInt,
+                json.get("id").asString,
                 json.get("name").asString,
                 json.get("description").asString,
                 trades
