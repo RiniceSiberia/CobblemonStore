@@ -32,8 +32,8 @@ object JsonFileUtils {
             for (j in arr.toList()){
                 val jo = j.asJsonObject
                 val store = Store.deserialize(jo.get("store").asJsonObject)
-                val index = jo.get("id").asInt
-                StoresLibrary[index] = store
+                val id = jo.get("id").asString
+                StoresLibrary[id] = store
             }
             return true
         }catch (e : Exception) {
