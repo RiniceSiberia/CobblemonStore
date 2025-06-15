@@ -3,12 +3,16 @@ package com.xxxt.cobblemon_store
 import com.mojang.logging.LogUtils
 import com.xxxt.cobblemon_store.event.StoreEvents
 import com.xxxt.cobblemon_store.store.StoresLibrary
+import com.xxxt.cobblemon_store.store.WarehouseLibrary
 import com.xxxt.cobblemon_store.utils.JsonFileUtils
 import dev.architectury.event.events.common.TickEvent
+import net.minecraft.core.RegistryAccess
+import net.minecraft.server.MinecraftServer
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
@@ -20,17 +24,22 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
     init {
         NeoForge.EVENT_BUS.register(this)
         StoresLibrary.register()
+        WarehouseLibrary.register()
         Registrations.register(modEventBus)
 
-        with(NeoForge.EVENT_BUS){
+        with(modEventBus){
             addListener(Registrations::addBlockToTab)
+        }
+        with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)
         }
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.spec)
     }
 
     @SubscribeEvent
     fun onServerStarting(event: ServerStartingEvent){
-        JsonFileUtils.server = event.server
+        server = event.server
+        registryAccess = server.allLevels.first().registryAccess()
     }
 
     @SubscribeEvent
@@ -46,7 +55,11 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
 
 
     companion object {
+        lateinit var server: MinecraftServer
         // Define mod id in a common place for everything to reference
+
+        lateinit var registryAccess: RegistryAccess
+
         const val MOD_ID: String = "cobblemon_store"
 
         private var tickCounter = 0

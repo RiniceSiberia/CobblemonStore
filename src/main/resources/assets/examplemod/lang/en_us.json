@@ -5,8 +5,8 @@
   "msg.cobblemon_store.inventory_full": "Your inventory is full! Please make space and try again.",
   "msg.cobblemon_store.not_enough_money": "You don't have enough currency!",
 
-  "msg.cobblemon_store.purchasing.gts_money": "You received $%1$s!",
-  "msg.cobblemon_store.cost.gts_money": "You spent $%1$s.",
+  "msg.cobblemon_store.purchasing.money": "You received $%1$s!",
+  "msg.cobblemon_store.cost.money": "You spent $%1$s.",
   "msg.cobblemon_store.purchasing.item": "You obtained %2$s x %1$s!",
   "msg.cobblemon_store.cost.item": "You spent %2$s x %1$s.",
 

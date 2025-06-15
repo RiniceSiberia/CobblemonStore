@@ -165,6 +165,9 @@ dependencies {
     implementation('io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT')
     implementation "curse.maven:architectury-api-419699:5786327"
 
+
+    implementation("com.cobblemon:neoforge:1.6.1+1.21.1")
+
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

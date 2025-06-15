@@ -1,19 +1,21 @@
 package com.xxxt.cobblemon_store.store
 
 import com.google.gson.JsonArray
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
-import java.util.UUID
+import java.util.*
 
 
 /**
  * 实现该接口为有不同程度上的存货上限
  */
 sealed interface Reserve{
+
+    val type : String
+
     fun couldBuy(player: Player) : Boolean
 
     fun consume(player: Player)
@@ -22,18 +24,31 @@ sealed interface Reserve{
 
     fun getTooltipComponent(player: Player) : MutableComponent
 
-    fun serialize() : JsonElement
+    fun serialize(): JsonObject{
+        return JsonObject().apply {
+            addProperty("name","reserve")
+            addProperty("type",type)
+            serialize()
+        }
+    }
+
+    fun JsonObject.serialize()
 
     companion object{
         fun deserialize(json : JsonObject) : Reserve?{
-            if (json.has("type") && json.get("type").isJsonPrimitive){
+            return try {
+                val name = json.get("name").asString
+                assert(name == "reserve")
                 val type = json.get("type").asString
                 when (type) {
-                    "global_reserve" -> return GlobalReserve.deserialize(json)
-                    "simple_single_reserve" -> return SimpleSingleReserve.deserialize(json)
+                    "global" -> GlobalReserve.deserialize(json)
+                    "simple_single_player" -> SimpleSinglePlayerReserve.deserialize(json)
+                    else -> null
                 }
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
             }
-            return null
         }
     }
 }
@@ -43,6 +58,10 @@ class GlobalReserve(
     var sales : Int = 0,
 //    val identity : Set<StoreIdentity> = emptySet()
 ) : Reserve{
+
+    override val type: String
+        get() = "global"
+
     override fun couldBuy(player: Player): Boolean {
         return sales < limit
     }
@@ -67,12 +86,9 @@ class GlobalReserve(
         }
     }
 
-    override fun serialize(): JsonElement {
-        return JsonObject ().apply{
-            addProperty("type", "global_reserve")
-            addProperty("limit", limit)
-            addProperty("sales", sales)
-        }
+    override fun JsonObject.serialize() {
+        addProperty("limit", limit)
+        addProperty("sales", sales)
     }
 
     companion object{
@@ -90,10 +106,14 @@ class GlobalReserve(
     }
 }
 
-open class SimpleSingleReserve(
+open class SimpleSinglePlayerReserve(
     open val limit : Int,
     val playerBought : MutableMap<UUID, Int> = mutableMapOf()
 ) : Reserve{
+
+    override val type: String
+        get() = "simple_single_player"
+
     override fun couldBuy(player: Player): Boolean {
         return playerBought.getOrDefault(player.uuid, 0) < limit
     }
@@ -118,25 +138,22 @@ open class SimpleSingleReserve(
         }
     }
 
-    override fun serialize(): JsonElement {
-        return JsonObject ().apply{
-            addProperty("type", "simple_single_reserve")
-            addProperty("limit", limit)
-            add("player_bought", JsonArray().apply {
-                playerBought.forEach {
-                    add(JsonObject().apply{
-                        addProperty("uuid", it.key.toString())
-                        addProperty("value", it.value)
-                    })
-                }
-            })
-        }
+    override fun JsonObject.serialize() {
+        addProperty("limit", limit)
+        add("player_bought", JsonArray().apply {
+            playerBought.forEach {
+                add(JsonObject().apply{
+                    addProperty("uuid", it.key.toString())
+                    addProperty("value", it.value)
+                })
+            }
+        })
     }
 
     companion object{
-        fun deserialize(json : JsonObject) : SimpleSingleReserve?{
+        fun deserialize(json : JsonObject) : SimpleSinglePlayerReserve?{
             return try {
-                SimpleSingleReserve(
+                SimpleSinglePlayerReserve(
                     limit = json.get("limit").asInt,
                     playerBought = json.getAsJsonArray("player_bought").map { it.asJsonObject }.associate {
                         UUID.fromString(it.get("uuid").asString) to it.get("value").asInt

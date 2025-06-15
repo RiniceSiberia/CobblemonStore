@@ -1,7 +1,9 @@
 package com.xxxt.cobblemon_store.store
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.xxxt.cobblemon_store.Registrations
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponents
@@ -11,8 +13,8 @@ import net.minecraft.world.item.ItemStack
 
 class Trade(
     val storeId : String,
-    val cost : CostObj<*>?,
-    val purchasing : PurchasingObj<*>,
+    val cost : CostObj?,
+    val purchasing : PurchasingObj,
     val reserve : Reserve?
 ){
     val supStore
@@ -29,7 +31,9 @@ class Trade(
         }
         cost?.pay(player)?.also { if(!it) return false }
         reserve?.consume(player)
-        purchasing.purchasing(player)
+        val warehouse = WarehouseLibrary.getOrCreate(player)
+        val purchasingItem = purchasing.purchasing(player)
+        warehouse.put(purchasingItem.index,purchasingItem)
         player.sendSystemMessage(
             purchasing.purchasingMsgComponent().also {
                 if (cost!=null)
@@ -45,15 +49,13 @@ class Trade(
 
     val showedItemStack : ItemStack
         get(){
-            if (purchasing is ItemPurchasingObj){
+            if (purchasing is PurchasingObj.ItemPurchasingObj){
                 return purchasing.stack.copy().also {
-                    it.set(DataComponents.CUSTOM_NAME,
-                        Component.translatable(
-                            "item.cobblemon_store.sell_menu.slot.name",
-                            Component.translatable("item.cobblemon_store.sell_menu.slot.sell"),
-                            purchasing.stack.displayName
-                        ).withStyle(ChatFormatting.GOLD)
-                    )
+                    it[DataComponents.CUSTOM_NAME] = Component.translatable(
+                        "item.cobblemon_store.sell_menu.slot.name",
+                        Component.translatable("item.cobblemon_store.sell_menu.slot.sell"),
+                        purchasing.stack.displayName
+                    ).withStyle(ChatFormatting.GOLD)
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
                         Gson().toJson(serialize())
@@ -66,7 +68,7 @@ class Trade(
                             "item.cobblemon_store.sell_menu.slot.name",
                             Component.translatable("item.cobblemon_store.sell_menu.slot.buy"),
                             Component.translatable(
-                                "item.cobblemon_store.sell_menu.slot.gts_money",
+                                "item.cobblemon_store.sell_menu.slot.money",
                                 purchasing
                             )
                         )
@@ -92,9 +94,7 @@ class Trade(
 
     companion object{
 
-        val NULL_HOLDER : JsonObject = JsonObject().apply {
-            addProperty("type","null_holder")
-        }
+        val NULL_HOLDER : JsonElement = JsonPrimitive(-1)
 
         fun deserialize(json: JsonObject) : Trade?{
             return try {

@@ -1,5 +1,6 @@
 package com.xxxt.cobblemon_store.block
 
+import com.cobblemon.mod.common.util.writeString
 import com.mojang.serialization.MapCodec
 import com.xxxt.cobblemon_store.menu.StoreMenuProvider
 import com.xxxt.cobblemon_store.store.Store
@@ -47,14 +48,15 @@ class StoreBlock(
             return InteractionResult.SUCCESS
         } else {
             if (player.isCreative && player.isCrouching){
-//                player.openMenu(state.g)
+                player.openMenu(
+                    StoreMenuProvider(store!!,0))
                 return InteractionResult.CONSUME
             }else if (store != null){
                 player.openMenu(
                     StoreMenuProvider(store!!,0))
                 { buf ->
                     buf.writeInt(0)
-                    buf.writeInt(store!!.id)
+                    buf.writeString(store!!.id)
                 }
                 return InteractionResult.CONSUME
             }else{

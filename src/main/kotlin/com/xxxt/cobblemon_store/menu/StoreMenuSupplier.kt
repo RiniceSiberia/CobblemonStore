@@ -1,5 +1,6 @@
 package com.xxxt.cobblemon_store.menu
 
+import com.cobblemon.mod.common.util.readString
 import com.xxxt.cobblemon_store.store.StoresLibrary
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.world.entity.player.Inventory
@@ -11,7 +12,7 @@ object StoreMenuSupplier : IContainerFactory<StoreMenu> {
         inv: Inventory,
         buf: RegistryFriendlyByteBuf): StoreMenu {
         val pageIndex = buf.readInt()
-        val store = StoresLibrary[buf.readInt()]!!
+        val store = StoresLibrary[buf.readString()]!!
         return StoreMenu(containerId,pageIndex,inv,store)
     }
 }

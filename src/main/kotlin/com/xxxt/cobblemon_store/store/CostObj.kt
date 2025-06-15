@@ -3,8 +3,8 @@ package com.xxxt.cobblemon_store.store
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import com.mojang.logging.LogUtils
 import com.mojang.serialization.JsonOps
+import com.xxxt.cobblemon_store.CobblemonStore.Companion.LOGGER
 import com.xxxt.cobblemon_store.utils.PluginUtils
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -13,10 +13,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import java.util.*
 import kotlin.math.max
-import kotlin.reflect.KClass
 
-sealed class CostObj<C : Comparable<C>> {
-    abstract val clazz : KClass<C>
+sealed class CostObj {
+
+    abstract val type : TradeType
 
     abstract fun enough(player: Player): Boolean
 
@@ -26,18 +26,31 @@ sealed class CostObj<C : Comparable<C>> {
 
     abstract fun costToolTipComponent() : MutableComponent
 
-    abstract fun serialize() : JsonElement
+    fun serialize() : JsonElement{
+        return JsonObject().apply {
+            addProperty("name","cost")
+            addProperty("type",type.lowercaseName)
+            serialize()
+        }
+    }
+
+    abstract fun JsonObject.serialize()
 
     companion object{
-        fun deserialize(json: JsonObject) : CostObj<*>?{
+        fun deserialize(json: JsonObject) : CostObj?{
             return try {
+                val name = json.get("name").asString
+                assert(name == "cost")
                 val type = json.asJsonObject.get("type").asString
                 when(type){
-                    "money_cost" ->{
+                    TradeType.MONEY.lowercaseName ->{
                         MoneyCostObj.deserialize(json)
                     }
-                    "item_cost" ->{
+                    TradeType.ITEM.lowercaseName ->{
                         ItemCostObj.deserialize(json)
+                    }
+                    TradeType.POKEMON.lowercaseName ->{
+                        null
                     }
                     else -> null
                 }
@@ -50,16 +63,15 @@ sealed class CostObj<C : Comparable<C>> {
 }
 
 class MoneyCostObj(
-    val price : Double
-) : CostObj<Double>(){
-
-    override val clazz: KClass<Double>
-        get() = Double::class
+    val value : Double
+) : CostObj(){
+    override val type: TradeType
+        get() = TradeType.MONEY
 
     override fun enough(player: Player): Boolean {
         return if (player is ServerPlayer && PluginUtils.checkBukkitInstalled()){
             val wallet = PluginUtils.getValut(player)?:return false
-            wallet >= price
+            wallet >= value
         }else{
             false
         }
@@ -67,28 +79,25 @@ class MoneyCostObj(
 
     override fun pay(player: Player): Boolean {
         if (player.isCreative) return true
-        return PluginUtils.minusMoney(player,price)
+        return PluginUtils.minusMoney(player,value)
     }
 
     override fun costMsgComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.gts_money",String.format("%.2f", price))
+        return Component.translatable("msg.cobblemon_store.cost.money",String.format("%.2f", value))
     }
 
     override fun costToolTipComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.slot.cost.gts_money",String.format("%.2f", price))
+        return Component.translatable("msg.cobblemon_store.slot.cost.money",String.format("%.2f", value))
     }
 
-    override fun serialize(): JsonElement {
-        return JsonObject().apply {
-            addProperty("type","money_cost")
-            addProperty("price",price)
-        }
+    override fun JsonObject.serialize() {
+        addProperty("value",value)
     }
 
     companion object{
         fun deserialize(json : JsonObject) : MoneyCostObj?{
             return try {
-                val price = json.getAsJsonPrimitive("price").asDouble
+                val price = json.getAsJsonPrimitive("value").asDouble
                 MoneyCostObj(price)
             }catch (e : Throwable){
                 e.printStackTrace()
@@ -103,10 +112,10 @@ class MoneyCostObj(
  */
 class ItemCostObj(
     val stack: ItemStack,
-) : CostObj<Int>(){
+) : CostObj(){
 
-    override val clazz: KClass<Int>
-        get() = Int::class
+    override val type: TradeType
+        get() = TradeType.ITEM
 
     override fun enough(player: Player): Boolean {
         return player.inventory.items.any {
@@ -129,7 +138,7 @@ class ItemCostObj(
         while(countVariable>= 0){
             val target = targets.firstOrNull{it.count > 0}?:return false.also {
                 player.sendSystemMessage(
-                    Component.translatable("cobblemon_store_err", Calendar.getInstance())
+                    Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
                 )
                 LOGGER.error(
                     "Player ${player.name} attempted to pay $countVariable of ${this.stack.displayName}," +
@@ -140,7 +149,7 @@ class ItemCostObj(
             countVariable -= shrinkCount
             repeatNum++
             if (repeatNum >= 1000){
-                Component.translatable("cobblemon_store_err", Calendar.getInstance())
+                Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
                 LOGGER.error("Aborting loop: exceeded maximum allowed iterations (100000). Possible infinite loop.")
             }
         }
@@ -155,15 +164,12 @@ class ItemCostObj(
         return Component.translatable("msg.cobblemon_store.slot.cost.item", stack.hoverName,stack.count)
     }
 
-    override fun serialize(): JsonElement {
-        return JsonObject().apply {
-            addProperty("type","item_cost")
-            val nbt = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE,this@ItemCostObj.stack)
-                .resultOrPartial{err ->
-                    LOGGER.error("item stack序列化出错:${err}")
-                }.orElseThrow()
-            add("nbt",nbt)
-        }
+    override fun JsonObject.serialize() {
+        val nbt = ItemStack.CODEC.encodeStart(JsonOps.INSTANCE,this@ItemCostObj.stack)
+            .resultOrPartial{err ->
+                LOGGER.error("item stack序列化出错:${err}")
+            }.orElseThrow()
+        add("nbt",nbt)
     }
 
     companion object{
@@ -182,4 +188,8 @@ class ItemCostObj(
     }
 }
 
-private val LOGGER: org.slf4j.Logger = LogUtils.getLogger()
+//class SimplePokemonCostObj(
+//    val pokemon : String
+//) : CostObj<String>(){
+//
+//}
