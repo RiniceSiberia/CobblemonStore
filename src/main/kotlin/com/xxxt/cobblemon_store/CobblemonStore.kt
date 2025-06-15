@@ -29,6 +29,7 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
 
         with(modEventBus){
             addListener(Registrations::addBlockToTab)
+            addListener(Registrations.ScreenTypes::onRegisterScreen)
         }
         with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)

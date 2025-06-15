@@ -4,9 +4,7 @@ import com.mojang.serialization.Codec
 import com.xxxt.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import com.xxxt.cobblemon_store.block.StoreBlock
 import com.xxxt.cobblemon_store.menu.StoreMenuSupplier
-import com.xxxt.cobblemon_store.screen.ShopScreen
-import com.xxxt.cobblemon_store.store.Store
-import com.xxxt.cobblemon_store.store.Trade
+import com.xxxt.cobblemon_store.screen.StoreScreen
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.codec.ByteBufCodecs
@@ -16,14 +14,12 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.state.BlockBehaviour
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent
 import net.neoforged.neoforge.registries.DeferredBlock
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
-import java.util.function.Function
 import java.util.function.Supplier
 
 
@@ -92,7 +88,7 @@ object Registrations {
     object ScreenTypes {
         fun onRegisterScreen(event: RegisterMenuScreensEvent) {
             event.register(MenuTypes.STORE_MENU.get()) { menu, inventory, title ->
-                ShopScreen(
+                StoreScreen(
                     menu,
                     inventory,
                     title
