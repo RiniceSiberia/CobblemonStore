@@ -1,11 +1,14 @@
 package com.xxxt.cobblemon_store.block
 
+import StoreSelectionScreen
 import com.cobblemon.mod.common.util.writeString
 import com.mojang.serialization.MapCodec
 import com.xxxt.cobblemon_store.menu.StoreMenuProvider
 import com.xxxt.cobblemon_store.store.Store
 import com.xxxt.cobblemon_store.store.StoresLibrary
+import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
@@ -31,32 +34,38 @@ class StoreBlock: BaseEntityBlock(
 ) {
 
 
-    override fun useWithoutItem(
+     override fun useWithoutItem(
         state: BlockState,
         level: Level,
         pos: BlockPos,
         player: Player,
         hitResult: BlockHitResult
     ): InteractionResult {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS
-        } else {
-            if (player.isCreative && player.isCrouching){
-                player.openMenu(
-                    StoreMenuProvider(store!!,0))
-                return InteractionResult.CONSUME
-            }else if (store != null){
-                player.openMenu(
-                    StoreMenuProvider(store!!,0))
-                { buf ->
-                    buf.writeInt(0)
-                    buf.writeString(store!!.id)
+        if (!level.isClientSide()) {
+            val be = level.getBlockEntity(pos)
+            if (be != null && be is StoreBlockEntity){
+                val store = be.store
+                if (store != null) {
+                    player.openMenu(
+                        StoreMenuProvider(store, 0)
+                    )
+                    { buf ->
+                        buf.writeInt(0)
+                        buf.writeString(store.id)
+                    }
+                    return InteractionResult.CONSUME
                 }
-                return InteractionResult.CONSUME
-            }else{
-                return InteractionResult.SUCCESS
+            } else {
+                if (player.isCreative && player.isCrouching) {
+                    Minecraft.getInstance().setScreen(
+                        StoreSelectionScreen(
+                            Component.literal("test")
+                        )
+                    )
+                }
             }
         }
+        return InteractionResult.sidedSuccess(level.isClientSide)
     }
 
     override fun codec(): MapCodec<out BaseEntityBlock?> {
