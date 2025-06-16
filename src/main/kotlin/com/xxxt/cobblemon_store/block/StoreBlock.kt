@@ -7,22 +7,19 @@ import com.xxxt.cobblemon_store.store.Store
 import com.xxxt.cobblemon_store.store.StoresLibrary
 import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionResult
-import net.minecraft.world.MenuProvider
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.CraftingTableBlock
 import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument
 import net.minecraft.world.level.material.MapColor
 import net.minecraft.world.level.material.PushReaction
 import net.minecraft.world.phys.BlockHitResult
 
-class StoreBlock(
-    var storeId : String?=null
-) : Block(
+class StoreBlock: BaseEntityBlock(
     Properties.of()
         .mapColor(MapColor.QUARTZ)
         .instrument(NoteBlockInstrument.GUITAR)
@@ -33,12 +30,6 @@ class StoreBlock(
         .sound(SoundType.EMPTY).ignitedByLava()
 ) {
 
-    val store : Store?
-        get() = StoresLibrary[storeId]
-
-    public override fun codec(): MapCodec<out CraftingTableBlock?> {
-        return CraftingTableBlock.CODEC
-    }
 
     override fun useWithoutItem(
         state: BlockState,
@@ -66,6 +57,17 @@ class StoreBlock(
                 return InteractionResult.SUCCESS
             }
         }
+    }
+
+    override fun codec(): MapCodec<out BaseEntityBlock?> {
+
+    }
+
+    override fun newBlockEntity(
+        p0: BlockPos,
+        p1: BlockState
+    ): StoreBlockEntity? {
+        return StoreBlockEntity(p0, p1)
     }
 
 }

@@ -3,6 +3,7 @@ package com.xxxt.cobblemon_store
 import com.mojang.serialization.Codec
 import com.xxxt.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import com.xxxt.cobblemon_store.block.StoreBlock
+import com.xxxt.cobblemon_store.block.StoreBlockEntity
 import com.xxxt.cobblemon_store.menu.StoreMenuSupplier
 import com.xxxt.cobblemon_store.screen.StoreScreen
 import net.minecraft.core.component.DataComponentType
@@ -14,6 +15,8 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent
@@ -119,6 +122,21 @@ object Registrations {
 
         fun register(eventBus: IEventBus) {
             TAGS.register(eventBus)
+        }
+    }
+
+    object BlockEntities{
+        val BLOCK_ENTITIES = DeferredRegister.create(
+            Registries.BLOCK_ENTITY_TYPE,
+            MOD_ID
+        )
+        val STORE_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+            "store_block_entity_type"
+        ) {
+            BlockEntityType.Builder.of(
+                ::StoreBlockEntity,
+                StoreBlocks.STORE_BLOCK.get()
+            ).build(null)
         }
     }
 
