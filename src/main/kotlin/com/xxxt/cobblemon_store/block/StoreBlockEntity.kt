@@ -13,7 +13,7 @@ class StoreBlockEntity(
     pos : BlockPos,
     state : BlockState
 ) : BlockEntity(
-    Registrations.BlockEntities.STORE_BLOCK_ENTITY_TYPE,
+    Registrations.BlockEntities.STORE_BLOCK_ENTITY_TYPE.get(),
     pos,
     state
 ){
@@ -24,12 +24,17 @@ class StoreBlockEntity(
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
-        tag.putString("store_id_tag",storeId)
+        if (storeId != null){
+            tag.putString("store_id_tag",storeId)
+        }
     }
 
     override fun loadAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.loadAdditional(tag, registries)
-        storeId = tag.getString("store_id_tag")
+        storeId = if (tag.contains("store_id_tag")) {
+            tag.getString("store_id_tag")
+        } else {
+            null
+        }
     }
-
 }

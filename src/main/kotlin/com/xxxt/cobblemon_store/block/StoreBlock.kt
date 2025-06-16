@@ -69,7 +69,7 @@ class StoreBlock: BaseEntityBlock(
     }
 
     override fun codec(): MapCodec<out BaseEntityBlock?> {
-
+        TODO()
     }
 
     override fun newBlockEntity(

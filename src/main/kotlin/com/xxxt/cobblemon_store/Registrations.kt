@@ -15,7 +15,6 @@ import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent
@@ -131,13 +130,12 @@ object Registrations {
             MOD_ID
         )
         val STORE_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
-            "store_block_entity_type"
-        ) {
-            BlockEntityType.Builder.of(
+            "store_block_entity_type",
+            Supplier{BlockEntityType.Builder.of(
                 ::StoreBlockEntity,
                 StoreBlocks.STORE_BLOCK.get()
-            ).build(null)
-        }
+            ).build(null)}
+        )
     }
 
 

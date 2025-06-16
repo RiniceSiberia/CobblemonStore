@@ -5,8 +5,7 @@ import com.xxxt.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import com.xxxt.cobblemon_store.event.StoreEvents
 import com.xxxt.cobblemon_store.store.StoresLibrary
 import com.xxxt.cobblemon_store.store.WarehouseLibrary
-import com.xxxt.cobblemon_store.utils.JsonFileUtils
-import dev.architectury.event.events.common.TickEvent
+import com.xxxt.cobblemon_store.utils.TestObj
 import net.minecraft.core.RegistryAccess
 import net.minecraft.server.MinecraftServer
 import net.neoforged.bus.api.IEventBus
@@ -34,6 +33,9 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
         with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)
         }
+
+        TestObj.test()
+
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.spec)
     }
 
