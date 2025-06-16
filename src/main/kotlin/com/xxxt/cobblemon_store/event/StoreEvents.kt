@@ -5,7 +5,7 @@ import com.google.gson.JsonObject
 import com.xxxt.cobblemon_store.CobblemonStore.Companion.LOGGER
 import com.xxxt.cobblemon_store.Registrations
 import com.xxxt.cobblemon_store.store.ItemCostObj
-import com.xxxt.cobblemon_store.store.PurchasingObj
+import com.xxxt.cobblemon_store.store.ItemPurchasingObj
 import com.xxxt.cobblemon_store.store.Trade
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent
 
@@ -23,7 +23,7 @@ object StoreEvents {
             }
         }
         if (trade != null){
-            if (trade.purchasing is PurchasingObj.ItemPurchasingObj){
+            if (trade.purchasing is ItemPurchasingObj){
                 if (trade.cost != null)
                     event.toolTip.add(
                         trade.cost.costToolTipComponent()

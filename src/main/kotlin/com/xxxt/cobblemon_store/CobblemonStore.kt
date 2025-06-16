@@ -1,6 +1,7 @@
 package com.xxxt.cobblemon_store
 
 import com.mojang.logging.LogUtils
+import com.xxxt.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import com.xxxt.cobblemon_store.event.StoreEvents
 import com.xxxt.cobblemon_store.store.StoresLibrary
 import com.xxxt.cobblemon_store.store.WarehouseLibrary
@@ -15,16 +16,15 @@ import net.neoforged.fml.common.Mod
 import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.server.ServerStartingEvent
+import net.neoforged.neoforge.event.server.ServerStoppingEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
-@Mod(CobblemonStore.Companion.MOD_ID)
+@Mod(MOD_ID)
 class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
 
     init {
         NeoForge.EVENT_BUS.register(this)
-        StoresLibrary.register()
-        WarehouseLibrary.register()
         Registrations.register(modEventBus)
 
         with(modEventBus){
@@ -41,6 +41,8 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
     fun onServerStarting(event: ServerStartingEvent){
         server = event.server
         registryAccess = server.allLevels.first().registryAccess()
+        WarehouseLibrary.register()
+        StoresLibrary.register()
     }
 
     @SubscribeEvent
@@ -49,8 +51,15 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
 
         if (tickCounter >= TICKS_PER_30_MINUTES) {
             tickCounter = 0
+            WarehouseLibrary.save()
             StoresLibrary.save()
         }
+    }
+
+    @SubscribeEvent
+    fun onServerStopping(event: ServerStoppingEvent){
+        WarehouseLibrary.save()
+        StoresLibrary.save()
     }
 
 

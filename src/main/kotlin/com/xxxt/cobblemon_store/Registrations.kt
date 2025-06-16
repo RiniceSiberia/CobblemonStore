@@ -110,6 +110,13 @@ object Registrations {
                     .networkSynchronized(ByteBufCodecs.STRING_UTF8)
             }
 
+        val STORE_ID_TAG: DeferredHolder<DataComponentType<*>, DataComponentType<String>> =
+            TAGS.registerComponentType("store_id_tag") {
+                DataComponentType.builder<String>()
+                    .persistent(Codec.STRING)
+                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+            }
+
         fun register(eventBus: IEventBus) {
             TAGS.register(eventBus)
         }

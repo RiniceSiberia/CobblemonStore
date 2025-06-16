@@ -2,6 +2,8 @@ package com.xxxt.cobblemon_store.store
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import java.util.function.IntFunction
 
 class Store(
@@ -10,6 +12,7 @@ class Store(
     val description: String? = null,
     val trades : MutableList<Trade> = mutableListOf()
 ) : MutableList<Trade> by trades{
+
 
     override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
         return super.toArray(generator)

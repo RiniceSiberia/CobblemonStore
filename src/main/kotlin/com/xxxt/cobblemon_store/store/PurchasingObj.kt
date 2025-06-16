@@ -10,6 +10,8 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import kotlin.isInfinite
+import kotlin.isNaN
 
 sealed class PurchasingObj{
 
@@ -60,7 +62,9 @@ sealed class PurchasingObj{
             }
         }
     }
-    class ItemPurchasingObj(
+
+}
+class ItemPurchasingObj(
         val stack : ItemStack
     ) : PurchasingObj(){
 
@@ -112,90 +116,97 @@ sealed class PurchasingObj{
         }
     }
 
-    class MoneyPurchasingObj(
-        val value : Double
-    ) : PurchasingObj(){
+class MoneyPurchasingObj(
+    val value : Double
+) : PurchasingObj(){
 
-        override val type: TradeType
-            get() = TradeType.MONEY
-
-        override fun purchasing(player: Player): WarehouseLibrary.Warehouse.WarehouseItem.MoneyWarehouseItem {
-            val warehouse = WarehouseLibrary.getOrCreate(player)
-            return WarehouseLibrary.Warehouse.WarehouseItem.MoneyWarehouseItem(
-                player.uuid,
-                warehouse.nextEmptyIndex,
-                value
-            )
+    init {
+        if (value.isNaN() || value.isInfinite()){
+            0.0
+        }else{
+            value
         }
+    }
 
-        override fun purchasingMsgComponent(): MutableComponent {
-            return Component.translatable(successMsgPath, String.format("%.2f", value))
-        }
+    override val type: TradeType
+        get() = TradeType.MONEY
 
-        override fun purchasingTooltipComponent(): MutableComponent {
-            return Component.translatable(
-                tooltipMsgPath,
-                String.format("%.2f", value)
-            )
-        }
+    override fun purchasing(player: Player): WarehouseLibrary.Warehouse.WarehouseItem.MoneyWarehouseItem {
+        val warehouse = WarehouseLibrary.getOrCreate(player)
+        return WarehouseLibrary.Warehouse.WarehouseItem.MoneyWarehouseItem(
+            player.uuid,
+            warehouse.nextEmptyIndex,
+            value
+        )
+    }
+
+    override fun purchasingMsgComponent(): MutableComponent {
+        return Component.translatable(successMsgPath, String.format("%.2f", value))
+    }
+
+    override fun purchasingTooltipComponent(): MutableComponent {
+        return Component.translatable(
+            tooltipMsgPath,
+            String.format("%.2f", value)
+        )
+    }
 
 
-        override fun JsonObject.serialize() {
-            addProperty("value",value)
-        }
+    override fun JsonObject.serialize() {
+        addProperty("value",value)
+    }
 
-        companion object{
-            fun deserialize(json : JsonObject) : MoneyPurchasingObj?{
-                return try {
-                    val value = json.getAsJsonPrimitive("value").asDouble
-                    MoneyPurchasingObj(value)
-                }catch (e : Throwable){
-                    e.printStackTrace()
-                    null
-                }
+    companion object{
+        fun deserialize(json : JsonObject) : MoneyPurchasingObj?{
+            return try {
+                val value = json.getAsJsonPrimitive("value").asDouble
+                MoneyPurchasingObj(value)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
             }
         }
     }
-    class PokemonPurchasingObj(
-        val pokemon : Pokemon
-    ) : PurchasingObj(){
+}
+class PokemonPurchasingObj(
+    val pokemon : Pokemon
+) : PurchasingObj(){
 
-        override val type: TradeType
-            get() = TradeType.POKEMON
+    override val type: TradeType
+        get() = TradeType.POKEMON
 
-        override fun purchasing(player: Player): WarehouseLibrary.Warehouse.WarehouseItem {
-            val warehouse = WarehouseLibrary.getOrCreate(player)
-            return WarehouseLibrary.Warehouse.WarehouseItem.PokemonWarehouseItem(
-                player.uuid,
-                warehouse.nextEmptyIndex,
-                pokemon
-            )
-        }
+    override fun purchasing(player: Player): WarehouseLibrary.Warehouse.WarehouseItem {
+        val warehouse = WarehouseLibrary.getOrCreate(player)
+        return WarehouseLibrary.Warehouse.WarehouseItem.PokemonWarehouseItem(
+            player.uuid,
+            warehouse.nextEmptyIndex,
+            pokemon
+        )
+    }
 
-        override fun purchasingMsgComponent(): MutableComponent {
-            return Component.translatable(successMsgPath,pokemon.getDisplayName())
-        }
+    override fun purchasingMsgComponent(): MutableComponent {
+        return Component.translatable(successMsgPath,pokemon.getDisplayName())
+    }
 
-        override fun purchasingTooltipComponent(): MutableComponent {
-            return Component.translatable(
-                tooltipMsgPath,
-                pokemon.getDisplayName()
-            )
-        }
+    override fun purchasingTooltipComponent(): MutableComponent {
+        return Component.translatable(
+            tooltipMsgPath,
+            pokemon.getDisplayName()
+        )
+    }
 
 
-        override fun JsonObject.serialize() {
-            add("pokemon",pokemon.saveToJSON(registryAccess))
-        }
-        companion object{
-            fun deserialize(json : JsonObject) : PokemonPurchasingObj?{
-                return try {
-                    val pokemon = Pokemon.loadFromJSON(registryAccess,json.getAsJsonObject("pokemon"))
-                    PokemonPurchasingObj(pokemon)
-                }catch (e : Throwable){
-                    e.printStackTrace()
-                    null
-                }
+    override fun JsonObject.serialize() {
+        add("pokemon",pokemon.saveToJSON(registryAccess))
+    }
+    companion object{
+        fun deserialize(json : JsonObject) : PokemonPurchasingObj?{
+            return try {
+                val pokemon = Pokemon.loadFromJSON(registryAccess,json.getAsJsonObject("pokemon"))
+                PokemonPurchasingObj(pokemon)
+            }catch (e : Throwable){
+                e.printStackTrace()
+                null
             }
         }
     }

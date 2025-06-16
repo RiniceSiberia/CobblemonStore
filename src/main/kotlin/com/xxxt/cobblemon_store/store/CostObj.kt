@@ -65,6 +65,15 @@ sealed class CostObj {
 class MoneyCostObj(
     val value : Double
 ) : CostObj(){
+
+    init {
+        if (value.isNaN() || value.isInfinite()){
+            0.0
+        }else{
+            value
+        }
+    }
+
     override val type: TradeType
         get() = TradeType.MONEY
 
@@ -187,9 +196,3 @@ class ItemCostObj(
         }
     }
 }
-
-//class SimplePokemonCostObj(
-//    val pokemon : String
-//) : CostObj<String>(){
-//
-//}

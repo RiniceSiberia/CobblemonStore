@@ -49,7 +49,7 @@ class Trade(
 
     val showedItemStack : ItemStack
         get(){
-            if (purchasing is PurchasingObj.ItemPurchasingObj){
+            if (purchasing is ItemPurchasingObj){
                 return purchasing.stack.copy().also {
                     it[DataComponents.CUSTOM_NAME] = Component.translatable(
                         "item.cobblemon_store.sell_menu.slot.name",
