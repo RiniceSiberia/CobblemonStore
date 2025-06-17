@@ -10,22 +10,22 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 
 class StoreBlockEntity(
-    pos : BlockPos,
-    state : BlockState
+    pos: BlockPos,
+    state: BlockState
 ) : BlockEntity(
     Registrations.BlockEntities.STORE_BLOCK_ENTITY_TYPE.get(),
     pos,
     state
-){
-    var storeId : String? = null
+) {
+    var storeId: String? = null
 
-    val store : Store?
+    val store: Store?
         get() = StoresLibrary[storeId]
 
     override fun saveAdditional(tag: CompoundTag, registries: HolderLookup.Provider) {
         super.saveAdditional(tag, registries)
-        if (storeId != null){
-            tag.putString("store_id_tag",storeId)
+        if (storeId != null) {
+            tag.putString("store_id_tag", storeId!!)
         }
     }
 
