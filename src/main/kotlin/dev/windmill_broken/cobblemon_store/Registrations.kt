@@ -1,6 +1,7 @@
 package dev.windmill_broken.cobblemon_store
 
 import com.mojang.serialization.Codec
+import dev.windmill_broken.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import dev.windmill_broken.cobblemon_store.block.StoreBlock
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity
 import dev.windmill_broken.cobblemon_store.menu.StoreMenuSupplier
@@ -15,9 +16,12 @@ import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.entity.BlockEntityType
+import net.minecraft.world.level.block.state.BlockBehaviour
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
+import net.neoforged.neoforge.network.registration.PayloadRegistrar
 import net.neoforged.neoforge.registries.DeferredBlock
 import net.neoforged.neoforge.registries.DeferredHolder
 import net.neoforged.neoforge.registries.DeferredRegister
@@ -27,7 +31,7 @@ import java.util.function.Supplier
 object Registrations {
 
     object StoreItems {
-        val ITEMS = DeferredRegister.createItems(CobblemonStore.Companion.MOD_ID)
+        val ITEMS = DeferredRegister.createItems(MOD_ID)
 
 
         fun register(eventBus: IEventBus) {
@@ -36,9 +40,9 @@ object Registrations {
     }
 
     object StoreBlocks {
-        val BLOCKS = DeferredRegister.createBlocks(CobblemonStore.Companion.MOD_ID)
+        val BLOCKS = DeferredRegister.createBlocks(MOD_ID)
 
-        val STORE_BLOCK = registerBlockItems("store_block"){ StoreBlock() }
+        val STORE_BLOCK = registerBlockItems("store_block") { StoreBlock(BlockBehaviour.Properties.of()) }
 
         fun register(eventBus: IEventBus) {
             BLOCKS.register(eventBus)
@@ -70,7 +74,7 @@ object Registrations {
     object MenuTypes {
         val MENU_TYPES: DeferredRegister<MenuType<*>> =
             DeferredRegister
-                .create(Registries.MENU, CobblemonStore.Companion.MOD_ID)
+                .create(Registries.MENU, MOD_ID)
         val STORE_MENU = MENU_TYPES.register(
             "store_menu",
             Supplier {
@@ -98,6 +102,19 @@ object Registrations {
         }
     }
 
+    object NetworkTypes {
+        fun registerNetworking(event: RegisterPayloadHandlersEvent) {
+            val registrar: PayloadRegistrar = event.registrar("1.0.0")
+
+            registrar.playToServer(
+                StoreConfigPacket.TYPE,
+                StoreConfigPacket.STREAM_CODEC
+            ) { packet, context ->
+                NetworkHandler.handleStoreConfigChanged(packet, context)
+            }
+        }
+    }
+
     object TagTypes {
         val TAGS = DeferredRegister.createDataComponents(
             Registries.DATA_COMPONENT_TYPE,
@@ -111,30 +128,29 @@ object Registrations {
                     .networkSynchronized(ByteBufCodecs.STRING_UTF8)
             }
 
-        val STORE_ID_TAG: DeferredHolder<DataComponentType<*>, DataComponentType<String>> =
-            TAGS.registerComponentType("store_id_tag") {
-                DataComponentType.builder<String>()
-                    .persistent(Codec.STRING)
-                    .networkSynchronized(ByteBufCodecs.STRING_UTF8)
-            }
-
         fun register(eventBus: IEventBus) {
             TAGS.register(eventBus)
         }
     }
 
-    object BlockEntities{
+    object BlockEntities {
         val BLOCK_ENTITIES = DeferredRegister.create(
             Registries.BLOCK_ENTITY_TYPE,
-            CobblemonStore.Companion.MOD_ID
+            MOD_ID
         )
         val STORE_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
             "store_block_entity_type",
-            Supplier{BlockEntityType.Builder.of(
-                ::StoreBlockEntity,
-                StoreBlocks.STORE_BLOCK.get()
-            ).build(null)}
+            Supplier {
+                BlockEntityType.Builder.of(
+                    ::StoreBlockEntity,
+                    StoreBlocks.STORE_BLOCK.get()
+                ).build(null)
+            }
         )
+
+        fun register(eventBus: IEventBus) {
+            BLOCK_ENTITIES.register(eventBus)
+        }
     }
 
 
@@ -143,6 +159,7 @@ object Registrations {
         StoreBlocks.register(eventBus)
         MenuTypes.register(eventBus)
         TagTypes.register(eventBus)
+        BlockEntities.register(eventBus)
     }
 
     fun addBlockToTab(event: BuildCreativeModeTabContentsEvent) {
