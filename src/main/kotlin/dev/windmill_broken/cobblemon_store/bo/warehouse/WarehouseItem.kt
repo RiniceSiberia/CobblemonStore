@@ -13,7 +13,7 @@ import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.PluginUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.PokemonSerializer
-import dev.windmill_broken.money_lib.dao.json.serializer.UUIDSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.world.item.ItemStack

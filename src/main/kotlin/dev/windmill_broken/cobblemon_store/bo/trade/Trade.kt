@@ -3,7 +3,7 @@ package dev.windmill_broken.cobblemon_store.bo.trade
 import com.google.gson.Gson
 import dev.windmill_broken.cobblemon_store.Registrations
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
@@ -119,7 +119,7 @@ class Trade(
                     ).withStyle(ChatFormatting.GOLD)
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
-                        Gson().toJson(jsonConfig.encodeToString(serializer(),this))
+                        Gson().toJson(kJsonConfig.encodeToString(serializer(),this))
                     )
                 }
             }else if (cost is ItemCostObj){
@@ -136,7 +136,7 @@ class Trade(
                     )
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
-                        Gson().toJson(jsonConfig.encodeToString(serializer(),this))
+                        Gson().toJson(kJsonConfig.encodeToString(serializer(),this))
                     )
                 }
 

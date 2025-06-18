@@ -5,11 +5,11 @@ import dev.windmill_broken.cobblemon_store.bo.store.Store
 import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
+import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.storesFile
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import java.nio.charset.StandardCharsets
@@ -54,7 +54,7 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
         try {
             Files.writeString(
                 storesFile,
-                jsonConfig.encodeToString(
+                kJsonConfig.encodeToString(
                     MapSerializer(
                         String.serializer(),
                         Store.serializer()
@@ -77,7 +77,7 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
             val fileStr = Files.readString(
                 storesFile,
                 StandardCharsets.UTF_8)
-            val map = jsonConfig.decodeFromString(
+            val map = kJsonConfig.decodeFromString(
                 MapSerializer(
                     String.serializer(),
                     Store.serializer()

@@ -1,12 +1,12 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
 import dev.windmill_broken.cobblemon_store.bo.warehouse.Warehouse
+import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.WarehouseLibrary
 import dev.windmill_broken.cobblemon_store.dao.database.dto.WarehouseLibraryDBEntity
 import dev.windmill_broken.cobblemon_store.dao.database.meta.WarehouseLibraryDBTable
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.database.DatabaseUtils
-import dev.windmill_broken.money_lib.dao.database.MigrationUtils
+import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
+import dev.windmill_broken.cobblemon_store.utils.MigrationUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update

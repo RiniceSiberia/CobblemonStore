@@ -2,8 +2,10 @@ package dev.windmill_broken.cobblemon_store.utils
 
 import com.google.gson.Gson
 import kotlinx.serialization.json.Json
+import net.neoforged.fml.loading.FMLPaths
+import java.nio.file.Files
 import java.nio.file.Path
-import dev.windmill_broken.money_lib.dao.json.JsonUtils as MoneyLibJsonUtils
+import kotlin.io.path.exists
 
 
 object JsonFileUtils {
@@ -13,7 +15,14 @@ object JsonFileUtils {
     val gsonConfig get() = Gson()
 
     val rootFolder: Path?
-        get() = MoneyLibJsonUtils.rootFolder
+        get() {
+            val gameDir = FMLPaths.GAMEDIR.get()
+            val myGlobalJsonDir = gameDir.resolve("antinomy_global_data")
+            if (!myGlobalJsonDir.exists()){
+                Files.createDirectories(myGlobalJsonDir)
+            }
+            return myGlobalJsonDir
+        }
 
     val storesFile: Path
         get() = rootFolder!!.resolve("stores.json")

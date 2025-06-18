@@ -4,13 +4,13 @@ import dev.windmill_broken.cobblemon_store.bo.store.Store
 import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
+import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
 import dev.windmill_broken.cobblemon_store.dao.database.dto.StoreDBEntity
 import dev.windmill_broken.cobblemon_store.dao.database.meta.StoreDBTable
 import dev.windmill_broken.cobblemon_store.dao.database.meta.TradeDBTable
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.database.DatabaseUtils
-import dev.windmill_broken.money_lib.dao.database.MigrationUtils
+import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
+import dev.windmill_broken.cobblemon_store.utils.MigrationUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 

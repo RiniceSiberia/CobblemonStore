@@ -4,7 +4,6 @@ import dev.windmill_broken.cobblemon_store.bo.store.Store
 import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.money_lib.dao.DAO
 
 interface StoresLibrary : DAO {
 
