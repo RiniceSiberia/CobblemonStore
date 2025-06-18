@@ -168,6 +168,8 @@ configurations {
 
 dependencies {
 
+    implementation("dev.windmill_broken.money_lib:MoneyLib:1.0.0")
+
     additionalRuntimeClasspath(implementation("mysql:mysql-connector-java:[8.0,)"))
     jarJar("mysql:mysql-connector-java:[8.0,)") {
         version {
@@ -182,9 +184,7 @@ dependencies {
 
     var exposedPath = "org.jetbrains.exposed:exposed-"
 
-    additionalRuntimeClasspath(implementation(exposedPath+"core:"+exposedVersion)){
-        transitive = false
-    }
+    additionalRuntimeClasspath(implementation(exposedPath+"core:"+exposedVersion))
     jarJar(exposedPath+"core:"+exposedVersion) {
         transitive = false
         version {
@@ -192,23 +192,36 @@ dependencies {
             prefer(exposedVersion)
         }
     }
+    additionalRuntimeClasspath(implementation(exposedPath+"dao:"+exposedVersion))
+    jarJar(exposedPath+"dao:"+exposedVersion) {
+        transitive = false
+        version {
+            strictly(exposedRange)
+            prefer(exposedVersion)
+        }
+    }
+    additionalRuntimeClasspath(implementation(exposedPath+"jdbc:"+exposedVersion))
+    jarJar(exposedPath+"jdbc:"+exposedVersion) {
+        transitive = false
+        version {
+            strictly(exposedRange)
+            prefer(exposedVersion)
+        }
+    }
 
+    additionalRuntimeClasspath(implementation(exposedPath+"json:"+exposedVersion))
+    jarJar(exposedPath+"json:"+exposedVersion) {
+        transitive = false
+        version {
+            strictly(exposedRange)
+            prefer(exposedVersion)
+        }
+    }
 
-//    implementation("mysql:mysql-connector-java:8.0.33")
-
-
-//    implementation("org.jetbrains.exposed:exposed-core:0.48.0")
-//    implementation("org.jetbrains.exposed:exposed-crypt:0.48.0")
-//    implementation("org.jetbrains.exposed:exposed-dao:0.48.0")
-//    implementation("org.jetbrains.exposed:exposed-jdbc:0.48.0")
-
-//    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.48.0")
-
-//    implementation("org.jetbrains.exposed:exposed-json:0.48.0")
-//    implementation("org.jetbrains.exposed:exposed-money:0.48.0")
-
-    // NEOFORGE
-    implementation 'thedarkcolour:kotlinforforge-neoforge:5.8.0'
+    implementation("thedarkcolour:kfflang-neoforge:5.8.0")
+    implementation("thedarkcolour:kfflib-neoforge:5.8.0")
+    implementation("thedarkcolour:kffmod-neoforge:5.8.0")
+//    implementation 'thedarkcolour:kotlinforforge-neoforge:5.8.0'
     implementation('io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT')
     implementation "curse.maven:architectury-api-419699:5786327"
 

@@ -13,16 +13,29 @@
     "msg.cobblemon_store.slot.purchasing.item": "卖出能获得 %2$s 份 %1$s",
     "msg.cobblemon_store.cost.item": "付出了 %2$s 份 %1$s, ",
     "msg.cobblemon_store.slot.cost.item": "需要支付 %2$s 份 %1$s, ",
+    "msg.cobblemon_store.purchasing.pokemon": "获得了 %1$s!",
+    "msg.cobblemon_store.slot.purchasing.pokemon": "宝可梦:[%1$s]",
+    "msg.cobblemon_store.cost.pokemon": "卖掉了%1$s, ",
+    "msg.cobblemon_store.slot.cost.pokemon": "需要卖掉%1$s, ",
 
 
     "item.cobblemon_store.sell_menu.slot.name" : "[%1$s]:%2$s",
     "item.cobblemon_store.sell_menu.slot.reserve.global" : "当前存货:%1$s/%2$s",
-    "item.cobblemon_store.sell_menu.slot.reserve.simple_single_player" : "当前玩家可购买数量:%1$s/%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.poll_limit" : "当前玩家可购买数量:%1$s/%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.time_limit" : "该商品将在%1$s下架,距现在还有:%2$s",
+
 
     "item.cobblemon_store.sell_menu.slot.money": "%1$s金币",
 
     "item.cobblemon_store.sell_menu.slot.sell" : "出售",
     "item.cobblemon_store.sell_menu.slot.buy" : "收购",
 
-    "screen.cobblemon_store.choosing.title": "请选择商店"
+    "screen.cobblemon_store.choosing.title": "请选择商店",
+
+
+    "unit.cobblemon_store.time.week": "%1$s周",
+    "unit.cobblemon_store.time.day": "%1$s日",
+    "unit.cobblemon_store.time.hour": "%1$s点",
+    "unit.cobblemon_store.time.second": "%1$s秒",
+    "unit.cobblemon_store.time.minute": "%1$s分"
 }
