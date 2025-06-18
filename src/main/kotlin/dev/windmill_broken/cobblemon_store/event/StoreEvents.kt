@@ -5,7 +5,7 @@ import dev.windmill_broken.cobblemon_store.Registrations
 import dev.windmill_broken.cobblemon_store.bo.trade.ItemCostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.ItemPurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.TradeSerializer
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent
 
 object StoreEvents {
@@ -15,7 +15,7 @@ object StoreEvents {
         val json = stack.components.get(Registrations.TagTypes.TRADE_ITEM_TAG.get())
         val trade = json?.let {
             try {
-                jsonConfig.decodeFromString(TradeSerializer,it)
+                kJsonConfig.decodeFromString(TradeSerializer,it)
             }catch (e : Exception){
                 CobblemonStore.Companion.LOGGER.error("deserialization err : ",e)
                 null

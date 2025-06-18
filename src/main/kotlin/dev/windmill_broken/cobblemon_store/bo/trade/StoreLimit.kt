@@ -7,7 +7,7 @@ package dev.windmill_broken.cobblemon_store.bo.trade
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.TimeUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.CalendarSerializer
-import dev.windmill_broken.money_lib.dao.json.serializer.UUIDSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.ChatFormatting

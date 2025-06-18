@@ -5,10 +5,10 @@ import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
+import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.tradesFile
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import java.nio.charset.StandardCharsets
@@ -70,7 +70,7 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
                 tradesFile,
                 StandardCharsets.UTF_8
                 )
-            val map = jsonConfig.decodeFromString(
+            val map = kJsonConfig.decodeFromString(
                 MapSerializer(
                     Int.serializer(),
                     Trade.serializer()
@@ -86,7 +86,7 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
         try {
             Files.writeString(
                 tradesFile,
-                jsonConfig.encodeToString(
+                kJsonConfig.encodeToString(
                     MapSerializer(
                         Int.serializer(),
                         Trade.serializer()

@@ -167,11 +167,16 @@ configurations {
 }
 
 dependencies {
+//    implementation("dev.windmill_broken.money_lib:MoneyLib:1.0.0")
+//    jarJar("dev.windmill_broken.money_lib:MoneyLib:1.0.0") {
+//        version {
+//            strictly("[1.0.0,)")
+//            prefer("1.0.1")
+//        }
+//    }
 
-    implementation("dev.windmill_broken.money_lib:MoneyLib:1.0.0")
-
-    additionalRuntimeClasspath(implementation("mysql:mysql-connector-java:[8.0,)"))
-    jarJar("mysql:mysql-connector-java:[8.0,)") {
+    additionalRuntimeClasspath(implementation("mysql:mysql-connector-java:8.0.33"))
+    jarJar("mysql:mysql-connector-java:8.0.33") {
         version {
             strictly("[8.0,)")
             prefer("8.0.33")
@@ -183,6 +188,11 @@ dependencies {
     var exposedRange = "[0.48.0,)"
 
     var exposedPath = "org.jetbrains.exposed:exposed-"
+
+//    compileOnly(exposedPath + "core:" + exposedVersion)
+//    compileOnly(exposedPath + "dao:" + exposedVersion)
+//    compileOnly(exposedPath + "jdbc:" + exposedVersion)
+//    compileOnly(exposedPath + "json:" + exposedVersion)
 
     additionalRuntimeClasspath(implementation(exposedPath+"core:"+exposedVersion))
     jarJar(exposedPath+"core:"+exposedVersion) {
@@ -218,6 +228,17 @@ dependencies {
         }
     }
 
+
+    additionalRuntimeClasspath(implementation("com.zaxxer:HikariCP:6.3.0"))
+    jarJar("com.zaxxer:HikariCP:6.3.0") {
+        transitive = false
+        version {
+            strictly("[6.3.0,)")
+            prefer("6.3.0")
+        }
+    }
+
+
     implementation("thedarkcolour:kfflang-neoforge:5.8.0")
     implementation("thedarkcolour:kfflib-neoforge:5.8.0")
     implementation("thedarkcolour:kffmod-neoforge:5.8.0")
@@ -227,6 +248,7 @@ dependencies {
 
 
     implementation("com.cobblemon:neoforge:1.6.1+1.21.1")
+
 
 }
 

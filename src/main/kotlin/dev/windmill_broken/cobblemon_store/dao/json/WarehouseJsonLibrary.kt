@@ -2,11 +2,11 @@ package dev.windmill_broken.cobblemon_store.dao.json
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.bo.warehouse.Warehouse
+import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.WarehouseLibrary
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.warehousesFile
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
-import dev.windmill_broken.money_lib.dao.json.serializer.UUIDSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -48,7 +48,7 @@ object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
                 warehousesFile,
                 StandardCharsets.UTF_8
                 )
-            val map = jsonConfig.decodeFromString(
+            val map = kJsonConfig.decodeFromString(
                 MapSerializer(
                     UUIDSerializer,
                     Warehouse.serializer()
@@ -64,7 +64,7 @@ object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
         try {
             Files.writeString(
                 warehousesFile,
-                jsonConfig.encodeToString(
+                kJsonConfig.encodeToString(
                         MapSerializer(
                             UUIDSerializer,
                             Warehouse.serializer()

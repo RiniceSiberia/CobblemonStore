@@ -1,4 +1,4 @@
-package com.xxxt.cobblemon_store.net
+package dev.windmill_broken.cobblemon_store.net
 
 import net.minecraft.core.BlockPos
 import net.minecraft.network.FriendlyByteBuf

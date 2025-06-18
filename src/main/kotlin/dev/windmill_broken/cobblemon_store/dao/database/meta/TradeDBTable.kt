@@ -3,7 +3,7 @@ package dev.windmill_broken.cobblemon_store.dao.database.meta
 import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.money_lib.dao.json.JsonUtils.jsonConfig
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import org.jetbrains.exposed.dao.id.IntIdTable
@@ -19,17 +19,17 @@ object TradeDBTable : IntIdTable("trade","t_id") {
     )
     val cost = jsonb(
         name = "cost",
-        jsonConfig = jsonConfig,
+        jsonConfig = kJsonConfig,
         kSerializer = CostObj.serializer()
     )
     val purchasing = jsonb(
         name = "purchasing",
-        jsonConfig = jsonConfig,
+        jsonConfig = kJsonConfig,
         kSerializer = PurchasingObj.serializer()
     )
     val storeLimits = jsonb(
         name = "store_limits",
-        jsonConfig = jsonConfig,
+        jsonConfig = kJsonConfig,
         kSerializer = MapSerializer(
             String.serializer(),
             StoreLimit.serializer()

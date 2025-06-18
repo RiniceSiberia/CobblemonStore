@@ -4,7 +4,7 @@
 package dev.windmill_broken.cobblemon_store.bo.warehouse
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.money_lib.dao.json.serializer.UUIDSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

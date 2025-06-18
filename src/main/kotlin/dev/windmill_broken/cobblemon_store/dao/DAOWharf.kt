@@ -6,8 +6,7 @@ import dev.windmill_broken.cobblemon_store.dao.database.WarehouseDBLibrary
 import dev.windmill_broken.cobblemon_store.dao.json.StoresJsonLibrary
 import dev.windmill_broken.cobblemon_store.dao.json.TradeJsonLibrary
 import dev.windmill_broken.cobblemon_store.dao.json.WarehouseJsonLibrary
-import dev.windmill_broken.money_lib.dao.DAO
-import dev.windmill_broken.money_lib.dao.database.DatabaseUtils
+import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
 
 object DAOWharf {
     val warehouseLibrary : WarehouseLibrary
