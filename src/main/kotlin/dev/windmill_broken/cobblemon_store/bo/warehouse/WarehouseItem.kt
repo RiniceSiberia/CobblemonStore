@@ -1,7 +1,8 @@
 @file:UseSerializers(
     UUIDSerializer::class,
     ItemStackSerializer::class,
-    PokemonSerializer::class
+    PokemonSerializer::class,
+    BigDecimalSerializer::class
 )
 package dev.windmill_broken.cobblemon_store.bo.warehouse
 
@@ -10,7 +11,8 @@ import com.cobblemon.mod.common.util.party
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.bo.trade.TradeType
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
-import dev.windmill_broken.cobblemon_store.utils.PluginUtils
+import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
+import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.PokemonSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
@@ -18,6 +20,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.items.ItemHandlerHelper
+import java.math.BigDecimal
 import java.util.*
 
 
@@ -51,13 +54,13 @@ sealed class WarehouseItem{
 class MoneyWarehouseItem(
     override val playerUUID: UUID,
     override val index : Int,
-    val price : Double
+    val value : BigDecimal
 ): WarehouseItem(){
     override val type: TradeType
         get() = TradeType.MONEY
 
     override fun retrieve() {
-        PluginUtils.addMoney(player, price)
+        MoneyUtils.addMoney(player, value)
         removeIt()
     }
 }

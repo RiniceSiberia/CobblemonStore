@@ -27,7 +27,7 @@ object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
     override fun getOrCreate(pid: UUID): Warehouse {
         if (this[pid] == null)
             put(pid, Warehouse(pid))
-        return this[pid]!!
+        return super.get(pid)!!
     }
 
     override fun update(

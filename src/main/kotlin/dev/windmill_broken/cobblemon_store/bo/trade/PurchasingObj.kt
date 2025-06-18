@@ -1,6 +1,7 @@
 @file:UseSerializers(
     ItemStackSerializer::class,
-    PokemonSerializer::class
+    PokemonSerializer::class,
+    BigDecimalSerializer::class
 )
 package dev.windmill_broken.cobblemon_store.bo.trade
 
@@ -12,12 +13,14 @@ import dev.windmill_broken.cobblemon_store.bo.warehouse.WarehouseItem
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.PokemonSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import java.math.BigDecimal
 
 @Serializable
 sealed class PurchasingObj{
@@ -68,16 +71,8 @@ class ItemPurchasingObj(
 
 @Serializable
 class MoneyPurchasingObj(
-    val value : Double
+    val value : BigDecimal
 ) : PurchasingObj(){
-
-    init {
-        if (value.isNaN() || value.isInfinite()){
-            0.0
-        }else{
-            value
-        }
-    }
 
     override val type: TradeType
         get() = TradeType.MONEY

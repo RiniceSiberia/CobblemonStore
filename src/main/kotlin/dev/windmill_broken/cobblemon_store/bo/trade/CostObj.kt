@@ -1,12 +1,14 @@
 @file:UseSerializers(
-    ItemStackSerializer::class
+    ItemStackSerializer::class,
+    BigDecimalSerializer::class
 )
 
 package dev.windmill_broken.cobblemon_store.bo.trade
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.cobblemon_store.utils.PluginUtils
+import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
@@ -14,6 +16,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import java.math.BigDecimal
 import java.util.*
 import kotlin.math.max
 
@@ -22,9 +25,9 @@ sealed class CostObj {
 
     abstract val type : TradeType
 
-    abstract fun enough(player: Player): Boolean
+    abstract fun enough(player: ServerPlayer): Boolean
 
-    abstract fun pay(player: Player) : Boolean
+    abstract fun pay(player: ServerPlayer) : Boolean
 
     abstract fun costMsgComponent() : MutableComponent
 
@@ -34,32 +37,24 @@ sealed class CostObj {
 
 @Serializable
 class MoneyCostObj(
-    val value : Double
+    val value: BigDecimal
 ) : CostObj(){
-
-    init {
-        if (value.isNaN() || value.isInfinite()){
-            0.0
-        }else{
-            value
-        }
-    }
 
     override val type: TradeType
         get() = TradeType.MONEY
 
-    override fun enough(player: Player): Boolean {
-        return if (player is ServerPlayer && PluginUtils.checkBukkitInstalled()){
-            val wallet = PluginUtils.getValut(player)?:return false
+    override fun enough(player: ServerPlayer): Boolean {
+        return run {
+            val wallet = MoneyUtils.selectMoney(player)
             wallet >= value
-        }else{
-            false
         }
     }
 
-    override fun pay(player: Player): Boolean {
+    override fun pay(player: ServerPlayer): Boolean {
         if (player.isCreative) return true
-        return PluginUtils.minusMoney(player,value)
+        val origin = MoneyUtils.selectMoney(player)
+        val current = MoneyUtils.minusMoney(player,value)
+        return origin > current
     }
 
     override fun costMsgComponent(): MutableComponent {
@@ -82,13 +77,13 @@ class ItemCostObj(
     override val type: TradeType
         get() = TradeType.ITEM
 
-    override fun enough(player: Player): Boolean {
+    override fun enough(player: ServerPlayer): Boolean {
         return player.inventory.items.any {
             it.item == stack.item
         }
     }
 
-    override fun pay(player: Player): Boolean {
+    override fun pay(player: ServerPlayer): Boolean {
         if (player.isCreative) return true
 
         val targets = player.inventory.items.filter {

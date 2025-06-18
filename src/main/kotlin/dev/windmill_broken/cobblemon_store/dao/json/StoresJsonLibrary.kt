@@ -25,7 +25,7 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
         load()
     }
 
-    override fun get(sid: String): Store? = this[sid]
+    override fun get(sid: String): Store? = super.get(sid)
 
     override fun create(
         id: String,

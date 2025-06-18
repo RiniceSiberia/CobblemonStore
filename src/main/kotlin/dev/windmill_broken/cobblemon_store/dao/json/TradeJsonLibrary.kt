@@ -19,8 +19,9 @@ import java.util.concurrent.ConcurrentHashMap
 object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.JsonDAO {
 
     private fun readResolve(): Any = TradeJsonLibrary
-
-    override fun get(tradeId: Int): Trade? = this[tradeId]
+    override fun get(tradeId: Int): Trade? {
+        return super.get(tradeId)
+    }
 
     override fun createTrade(
         storeId: String,

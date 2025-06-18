@@ -3,7 +3,7 @@ package dev.windmill_broken.cobblemon_store.block
 import com.cobblemon.mod.common.util.writeString
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import com.xxxt.cobblemon_store.screen.StoreSelectionScreen
+import dev.windmill_broken.cobblemon_store.screen.StoreSelectionScreen
 import dev.windmill_broken.cobblemon_store.menu.StoreMenuProvider
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos

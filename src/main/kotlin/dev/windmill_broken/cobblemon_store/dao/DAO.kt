@@ -1,5 +1,7 @@
 package dev.windmill_broken.cobblemon_store.dao
 
+import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
+
 
 interface DAO {
 

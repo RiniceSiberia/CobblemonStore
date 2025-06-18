@@ -1,6 +1,9 @@
 package dev.windmill_broken.cobblemon_store
 
+import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.fml.ModContainer
+import net.neoforged.fml.config.ModConfig
 import net.neoforged.fml.event.config.ModConfigEvent
 import net.neoforged.neoforge.common.ModConfigSpec
 
@@ -24,7 +27,7 @@ object Config {
         .define("db_name", "mydb")
 
     private val extraOptions: ModConfigSpec.ConfigValue<String> = BUILDER
-        .define("extra_options", "?useSSL=false&serverTimezone=UTC")
+        .define("extra_options", "?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC")
 
 
 
@@ -37,14 +40,20 @@ object Config {
     lateinit var DB_PWD: String
     lateinit var DB_NAME: String
     lateinit var EXTRA_OPTIONS: String
-    @SubscribeEvent
-    fun onLoad(event: ModConfigEvent) {
-        DB_PATH = dbPath.get()
-        DB_DRIVER = dbDriver.get()
-        DB_USER = dbUser.get()
-        DB_PWD = dbPwd.get()
-        DB_NAME = dbName.get()
-        EXTRA_OPTIONS = extraOptions.get()
+
+    fun register(modEventBus: IEventBus, modContainer: ModContainer) {
+//        container.registerConfig(ModConfig.Type.SERVER, SPEC,"${MOD_FOLDER_ID}/money_settings_server.cfg")
+        modContainer.registerConfig(ModConfig.Type.SERVER, spec)
+        with(modEventBus){
+            addListener { event : ModConfigEvent ->
+                DB_PATH = dbPath.get()
+                DB_DRIVER = dbDriver.get()
+                DB_USER = dbUser.get()
+                DB_PWD = dbPwd.get()
+                DB_NAME = dbName.get()
+                EXTRA_OPTIONS = extraOptions.get()
+            }
+        }
     }
 
 }

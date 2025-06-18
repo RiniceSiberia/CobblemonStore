@@ -1,4 +1,4 @@
-package com.xxxt.cobblemon_store.screen
+package dev.windmill_broken.cobblemon_store.screen
 
 import dev.windmill_broken.cobblemon_store.net.StoreConfigPacket
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity

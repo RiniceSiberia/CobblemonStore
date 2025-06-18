@@ -16,6 +16,7 @@ import kotlinx.serialization.encoding.Encoder
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 
@@ -79,25 +80,28 @@ class Trade(
 
 
     fun trade( player: Player) : Boolean{
-        if (!cost.enough(player)){
-            player.sendSystemMessage(Component.translatable("msg.cobblemon_store.not_enough_money"))
-            return false
-        }
-        if (storeLimits.isNotEmpty() && !storeLimits.any { it.value.couldBuy(player) }){
-            player.sendSystemMessage(Component.translatable("msg.cobblemon_store.sold_out"))
-            return false
-        }
-        cost.pay(player).also { if(!it) return false }
-        storeLimits.forEach { it.value.consume(player) }
-        val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
-        val purchasingItem = purchasing.purchasing(player)
-        warehouse.put(purchasingItem.index,purchasingItem)
-        player.sendSystemMessage(
-            purchasing.purchasingMsgComponent().also {
-                it.append(cost.costMsgComponent())
+        if (player is ServerPlayer){
+            if (!cost.enough(player)){
+                player.sendSystemMessage(Component.translatable("msg.cobblemon_store.not_enough_money"))
+                return false
             }
-        )
-        return true
+            if (storeLimits.isNotEmpty() && !storeLimits.any { it.value.couldBuy(player) }){
+                player.sendSystemMessage(Component.translatable("msg.cobblemon_store.sold_out"))
+                return false
+            }
+            cost.pay(player).also { if(!it) return false }
+            storeLimits.forEach { it.value.consume(player) }
+            val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
+            val purchasingItem = purchasing.purchasing(player)
+            warehouse.put(purchasingItem.index,purchasingItem)
+            player.sendSystemMessage(
+                purchasing.purchasingMsgComponent().also {
+                    it.append(cost.costMsgComponent())
+                }
+            )
+            return true
+        }
+        return false
     }
 
     fun saveChange(){
