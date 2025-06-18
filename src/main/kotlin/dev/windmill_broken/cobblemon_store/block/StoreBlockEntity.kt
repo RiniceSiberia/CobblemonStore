@@ -19,8 +19,6 @@ class StoreBlockEntity(
 ) {
     var storeId: String? = null
 
-    val store: Store?
-        get() = StoresLibrary[storeId]
     val store : Store?
         get() = storeId?.let { DAOWharf.storeLibrary[it] }
 

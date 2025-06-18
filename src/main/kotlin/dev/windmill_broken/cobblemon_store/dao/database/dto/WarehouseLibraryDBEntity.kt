@@ -4,7 +4,7 @@ import dev.windmill_broken.cobblemon_store.dao.database.meta.WarehouseLibraryDBT
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import java.util.UUID
+import java.util.*
 
 class WarehouseLibraryDBEntity(
     id : EntityID<UUID>

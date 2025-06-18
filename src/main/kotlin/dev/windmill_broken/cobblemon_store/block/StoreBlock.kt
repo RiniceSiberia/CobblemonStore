@@ -2,10 +2,9 @@ package dev.windmill_broken.cobblemon_store.block
 
 import com.cobblemon.mod.common.util.writeString
 import com.mojang.serialization.MapCodec
-import dev.windmill_broken.cobblemon_store.menu.StoreMenuProvider
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import com.xxxt.cobblemon_store.menu.StoreMenuProvider
 import com.xxxt.cobblemon_store.screen.StoreSelectionScreen
+import dev.windmill_broken.cobblemon_store.menu.StoreMenuProvider
 import net.minecraft.client.Minecraft
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
@@ -24,10 +23,6 @@ import net.minecraft.world.phys.BlockHitResult
 
 class StoreBlock(
     properties: Properties = Properties.of()
-): BaseEntityBlock(
-     properties
-class StoreBlock(
-    properties: Properties
 ) : BaseEntityBlock(
     properties
         .mapColor(MapColor.QUARTZ)

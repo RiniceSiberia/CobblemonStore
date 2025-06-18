@@ -4,9 +4,9 @@
 
 package dev.windmill_broken.cobblemon_store.bo.trade
 
+import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.utils.PluginUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
-import dev.windmill_broken.cobblemon_store.CobblemonStore
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component

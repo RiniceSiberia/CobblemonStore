@@ -5,7 +5,6 @@ import dev.windmill_broken.cobblemon_store.bo.store.Store
 import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
 import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.storesFile

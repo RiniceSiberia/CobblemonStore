@@ -1,6 +1,8 @@
 package dev.windmill_broken.cobblemon_store
 
 import com.mojang.serialization.Codec
+import com.xxxt.cobblemon_store.net.NetworkHandler
+import com.xxxt.cobblemon_store.net.StoreConfigPacket
 import dev.windmill_broken.cobblemon_store.CobblemonStore.Companion.MOD_ID
 import dev.windmill_broken.cobblemon_store.block.StoreBlock
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity
