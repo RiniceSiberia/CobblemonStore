@@ -9,7 +9,7 @@ package dev.windmill_broken.cobblemon_store.bo.warehouse
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.party
 import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.cobblemon_store.bo.trade.TradeType
+import dev.windmill_broken.cobblemon_store.bo.trade.SellType
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
@@ -34,7 +34,6 @@ sealed class WarehouseItem{
     abstract val index : Int
     val player get() = CobblemonStore.Companion.server.playerList.getPlayer(playerUUID)!!
 
-    abstract val type : TradeType
     /**
      * 成交/取回
      */
@@ -54,13 +53,12 @@ sealed class WarehouseItem{
 class MoneyWarehouseItem(
     override val playerUUID: UUID,
     override val index : Int,
-    val value : BigDecimal
+    val value : BigDecimal,
+    val type : String
 ): WarehouseItem(){
-    override val type: TradeType
-        get() = TradeType.MONEY
 
     override fun retrieve() {
-        MoneyUtils.addMoney(player, value)
+        MoneyUtils.addMoney(player, value,type)
         removeIt()
     }
 }
@@ -71,8 +69,6 @@ class ItemWarehouseItem(
     override val index : Int,
     val stack : ItemStack
 ): WarehouseItem(){
-    override val type: TradeType
-        get() = TradeType.ITEM
 
     override fun retrieve() {
         ItemHandlerHelper.giveItemToPlayer(player,stack)
@@ -86,8 +82,6 @@ class PokemonWarehouseItem(
     override val index : Int,
     val pokemon: Pokemon
 ) : WarehouseItem(){
-    override val type: TradeType
-        get() = TradeType.POKEMON
 
     override fun retrieve() {
         player.party().add(pokemon)

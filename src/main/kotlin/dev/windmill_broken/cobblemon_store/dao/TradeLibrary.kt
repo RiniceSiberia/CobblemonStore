@@ -1,7 +1,7 @@
 package dev.windmill_broken.cobblemon_store.dao
 
-import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
-import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
+import dev.windmill_broken.cobblemon_store.bo.trade.Cost
+import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 
@@ -10,9 +10,9 @@ interface TradeLibrary : DAO {
 
     fun createTrade(
         storeId : String,
-        cost : CostObj,
-        purchasing : PurchasingObj,
-        limit : Map<String, StoreLimit> = emptyMap()
+        cost : Cost,
+        purchasing : Purchasing,
+        storeLimits : Set<StoreLimit> = emptySet()
     )
 
     fun getByStoreId(storeId : String) : Collection<Trade>

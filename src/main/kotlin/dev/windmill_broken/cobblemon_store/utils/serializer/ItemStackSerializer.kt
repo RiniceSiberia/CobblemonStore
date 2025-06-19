@@ -4,11 +4,16 @@ import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.gsonConfig
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonElement
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.Tag
 import net.minecraft.world.item.ItemStack
 
 object ItemStackSerializer  : KSerializer<ItemStack> {

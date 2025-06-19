@@ -34,15 +34,7 @@ object DAOWharf {
         val list = listOf(warehouseLibrary, storeLibrary, tradeLibrary)
         list.forEach {
             if (it is DAO.JsonDAO){
-                save()
-            }
-        }
-    }
-    fun load(){
-        val list = listOf(warehouseLibrary, storeLibrary, tradeLibrary)
-        list.forEach {
-            if (it is DAO.JsonDAO){
-                load()
+                it.save()
             }
         }
     }

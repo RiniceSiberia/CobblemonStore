@@ -29,14 +29,14 @@ class StoreScreen(menu: StoreMenu, playerInventory: Inventory, title: Component)
         pGuiGraphics.drawString(
             this.font,
             this.title,
-            this.titleLabelX + this.imageWidth - 60,
-            this.titleLabelY, 0x404040, true
+            this.titleLabelX,
+            this.titleLabelY, 0x636363, false
         )
         pGuiGraphics.drawString(
             this.font,
             this.playerInventoryTitle,
             this.inventoryLabelX,
-            this.inventoryLabelY, 0x404040, true
+            this.inventoryLabelY, 0x636363, false
         )
     }
 

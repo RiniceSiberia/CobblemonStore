@@ -11,6 +11,7 @@ import dev.windmill_broken.cobblemon_store.bo.warehouse.MoneyWarehouseItem
 import dev.windmill_broken.cobblemon_store.bo.warehouse.PokemonWarehouseItem
 import dev.windmill_broken.cobblemon_store.bo.warehouse.WarehouseItem
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
+import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.PokemonSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
@@ -19,17 +20,18 @@ import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import java.math.BigDecimal
 
 @Serializable
-sealed class PurchasingObj{
+sealed class Purchasing{
 
-    val successMsgPath = "msg.cobblemon_store.purchasing.${type.lowercaseName}"
+    val successMsgPath = "msg.cobblemon_store.purchasing.${sellType.lowercaseName}"
 
-    val tooltipMsgPath = "msg.cobblemon_store.slot.purchasing.${type.lowercaseName}"
+    val tooltipMsgPath = "msg.cobblemon_store.slot.purchasing.${sellType.lowercaseName}"
 
-    abstract val type : TradeType
+    abstract val sellType : SellType
 
     abstract fun purchasing(player : Player) : WarehouseItem
 
@@ -40,12 +42,19 @@ sealed class PurchasingObj{
 }
 
 @Serializable
-class ItemPurchasingObj(
+class ItemPurchasing(
         val stack : ItemStack
-    ) : PurchasingObj(){
+    ) : Purchasing(){
 
-        override val type: TradeType
-            get() = TradeType.ITEM
+        constructor(
+            item : Item,
+            count : Int = 1
+        ) : this(
+            ItemStack(item,count)
+        )
+
+        override val sellType: SellType
+            get() = SellType.ITEM
 
         override fun purchasing(player: Player): ItemWarehouseItem {
             val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
@@ -70,12 +79,19 @@ class ItemPurchasingObj(
     }
 
 @Serializable
-class MoneyPurchasingObj(
-    val value : BigDecimal
-) : PurchasingObj(){
+class MoneyPurchasing(
+    val value : BigDecimal,
+    val type : String = MoneyUtils.primaryCurrency.key().value()
+) : Purchasing(){
 
-    override val type: TradeType
-        get() = TradeType.MONEY
+    constructor(value : Int) : this(value.toBigDecimal())
+
+    constructor(value : Double) : this(value.toBigDecimal())
+
+    constructor(value : String) : this(value.toBigDecimal())
+
+    override val sellType: SellType
+        get() = SellType.MONEY
 
     override fun purchasing(player: Player): MoneyWarehouseItem {
         val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
@@ -99,12 +115,12 @@ class MoneyPurchasingObj(
 
 }
 @Serializable
-class PokemonPurchasingObj(
+class PokemonPurchasing(
     val pokemon : Pokemon
-) : PurchasingObj(){
+) : Purchasing(){
 
-    override val type: TradeType
-        get() = TradeType.POKEMON
+    override val sellType: SellType
+        get() = SellType.POKEMON
 
     override fun purchasing(player: Player): PokemonWarehouseItem {
         val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)

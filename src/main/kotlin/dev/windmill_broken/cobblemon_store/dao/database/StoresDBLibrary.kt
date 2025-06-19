@@ -1,8 +1,8 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
 import dev.windmill_broken.cobblemon_store.bo.store.Store
-import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
-import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
+import dev.windmill_broken.cobblemon_store.bo.trade.Cost
+import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
@@ -39,7 +39,7 @@ object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
         id: String,
         name: String,
         description: String?,
-        tradeValues: List<Triple<CostObj, PurchasingObj, Map<String, StoreLimit>>>
+        tradeValues: List<Triple<Cost, Purchasing, Set<StoreLimit>>>
     ) {
         transaction(db = DatabaseUtils.DATABASE) {
             StoreDBEntity.new(id) {

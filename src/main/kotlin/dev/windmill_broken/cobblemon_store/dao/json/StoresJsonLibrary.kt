@@ -2,8 +2,8 @@ package dev.windmill_broken.cobblemon_store.dao.json
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.bo.store.Store
-import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
-import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
+import dev.windmill_broken.cobblemon_store.bo.trade.Cost
+import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
@@ -31,7 +31,7 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
         id: String,
         name: String,
         description: String?,
-        tradeValues: List<Triple<CostObj, PurchasingObj, Map<String, StoreLimit>>>
+        tradeValues: List<Triple<Cost, Purchasing, Set<StoreLimit>>>
 
     ) {
         val store = Store(id,name,description)
@@ -58,7 +58,7 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
                     MapSerializer(
                         String.serializer(),
                         Store.serializer()
-                    ),this),
+                    ),this.toMap()),
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING

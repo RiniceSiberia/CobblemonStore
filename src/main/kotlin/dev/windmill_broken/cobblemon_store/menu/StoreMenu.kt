@@ -93,11 +93,7 @@ class StoreMenu(
     ): ItemStack = ItemStack.EMPTY
 
     override fun stillValid(p0: Player): Boolean {
-        return stillValid(
-            access,
-            player,
-            Registrations.StoreBlocks.STORE_BLOCK.get()
-        )
+        return true
     }
 
     override fun removed(player: Player) {

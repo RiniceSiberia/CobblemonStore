@@ -19,7 +19,7 @@
     "msg.cobblemon_store.slot.cost.pokemon": "需要卖掉%1$s, ",
 
 
-    "item.cobblemon_store.sell_menu.slot.name" : "[%1$s]:%2$s",
+    "item.cobblemon_store.sell_menu.slot.name" : "[%1$s] ",
     "item.cobblemon_store.sell_menu.slot.reserve.global" : "当前存货:%1$s/%2$s",
     "item.cobblemon_store.sell_menu.slot.reserve.poll_limit" : "当前玩家可购买数量:%1$s/%2$s",
     "item.cobblemon_store.sell_menu.slot.reserve.time_limit" : "该商品将在%1$s下架,距现在还有:%2$s",
@@ -27,10 +27,14 @@
 
     "item.cobblemon_store.sell_menu.slot.money": "%1$s金币",
 
-    "item.cobblemon_store.sell_menu.slot.sell" : "出售",
-    "item.cobblemon_store.sell_menu.slot.buy" : "收购",
+    "item.cobblemon_store.sell_menu.slot.sell" : "[出售]",
+    "item.cobblemon_store.sell_menu.slot.buy" : "[收购]",
+    "item.cobblemon_store.sell_menu.slot.exchange":"[交换]",
+    "item.cobblemon_store.sell_menu.slot.financial": "[金融]",
 
+    "menu.cobblemon_store.store" : "商店:%1$s",
     "screen.cobblemon_store.choosing.title": "请选择商店",
+    "block.cobblemon_store.store_block": "宝可梦商店方块",
 
 
     "unit.cobblemon_store.time.week": "%1$s周",

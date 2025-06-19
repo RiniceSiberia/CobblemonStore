@@ -1,0 +1,7 @@
+{
+  "parent": "cobblemon_store:custom/store_block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "single": "cobblemon_store:block/store_block"
+  }
+}

@@ -24,6 +24,6 @@ data class StoreMenuProvider(
     }
 
     override fun getDisplayName(): Component
-    = Component.translatable("menu.cobblemon_store.store")
+    = Component.translatable("menu.cobblemon_store.store",store.name)
 
 }

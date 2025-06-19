@@ -17,7 +17,7 @@ object JsonFileUtils {
     val rootFolder: Path?
         get() {
             val gameDir = FMLPaths.GAMEDIR.get()
-            val myGlobalJsonDir = gameDir.resolve("antinomy_global_data")
+            val myGlobalJsonDir = gameDir.resolve("windmill_broken_data")
             if (!myGlobalJsonDir.exists()){
                 Files.createDirectories(myGlobalJsonDir)
             }

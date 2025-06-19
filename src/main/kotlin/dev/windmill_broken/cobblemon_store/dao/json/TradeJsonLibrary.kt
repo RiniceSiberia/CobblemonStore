@@ -1,8 +1,8 @@
 package dev.windmill_broken.cobblemon_store.dao.json
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
-import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
+import dev.windmill_broken.cobblemon_store.bo.trade.Cost
+import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 import dev.windmill_broken.cobblemon_store.dao.DAO
@@ -25,16 +25,16 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
 
     override fun createTrade(
         storeId: String,
-        cost: CostObj,
-        purchasing: PurchasingObj,
-        limit: Map<String, StoreLimit>
+        cost: Cost,
+        purchasing: Purchasing,
+        storeLimits: Set<StoreLimit>
     ) {
         val t = Trade(
             nextEmptyIndex,
             storeId,
             cost,
             purchasing,
-            limit.toMutableMap()
+            storeLimits
         )
         this[t.id] = t
     }
@@ -91,7 +91,8 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
                     MapSerializer(
                         Int.serializer(),
                         Trade.serializer()
-                    )
+                    ),
+                    this.toMap()
                 ),
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,

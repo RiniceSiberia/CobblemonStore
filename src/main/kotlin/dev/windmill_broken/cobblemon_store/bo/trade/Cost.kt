@@ -14,16 +14,14 @@ import kotlinx.serialization.UseSerializers
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import java.math.BigDecimal
 import java.util.*
 import kotlin.math.max
 
 @Serializable
-sealed class CostObj {
-
-    abstract val type : TradeType
+sealed class Cost {
 
     abstract fun enough(player: ServerPlayer): Boolean
 
@@ -36,24 +34,53 @@ sealed class CostObj {
 }
 
 @Serializable
-class MoneyCostObj(
-    val value: BigDecimal
-) : CostObj(){
+data object FreeCost : Cost(){
+    override fun enough(player: ServerPlayer): Boolean {
+        return true
+    }
 
-    override val type: TradeType
-        get() = TradeType.MONEY
+    override fun pay(player: ServerPlayer): Boolean {
+        return true
+    }
+    override fun costMsgComponent(): MutableComponent {
+        return Component.empty()
+    }
+
+    override fun costToolTipComponent(): MutableComponent {
+        return Component.empty()
+    }
+}
+
+@Serializable
+class MoneyCost(
+    val value: BigDecimal,
+    val type : String = MoneyUtils.primaryCurrency.key().value()
+) : Cost(){
+
+    constructor(
+        value : Int
+    ) : this(value.toBigDecimal())
+
+    constructor(
+        value : Double
+    ) : this(value.toBigDecimal())
+
+    constructor(
+        value : String
+    ) : this(value.toBigDecimal())
+
 
     override fun enough(player: ServerPlayer): Boolean {
         return run {
-            val wallet = MoneyUtils.selectMoney(player)
+            val wallet = MoneyUtils.getCurrency(player,type)
             wallet >= value
         }
     }
 
     override fun pay(player: ServerPlayer): Boolean {
         if (player.isCreative) return true
-        val origin = MoneyUtils.selectMoney(player)
-        val current = MoneyUtils.minusMoney(player,value)
+        val origin = MoneyUtils.getCurrency(player,type)
+        val current = MoneyUtils.minusMoney(player,value,type)
         return origin > current
     }
 
@@ -70,12 +97,14 @@ class MoneyCostObj(
  * 不支持nbt检测
  */
 @Serializable
-class ItemCostObj(
+class ItemCost(
     val stack: ItemStack,
-) : CostObj(){
+) : Cost(){
 
-    override val type: TradeType
-        get() = TradeType.ITEM
+    constructor(
+        item : Item,
+        count : Int = 1
+    ) : this(ItemStack(item,count))
 
     override fun enough(player: ServerPlayer): Boolean {
         return player.inventory.items.any {

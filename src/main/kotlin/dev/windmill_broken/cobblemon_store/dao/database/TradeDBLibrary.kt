@@ -1,7 +1,7 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
-import dev.windmill_broken.cobblemon_store.bo.trade.CostObj
-import dev.windmill_broken.cobblemon_store.bo.trade.PurchasingObj
+import dev.windmill_broken.cobblemon_store.bo.trade.Cost
+import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 import dev.windmill_broken.cobblemon_store.dao.DAO
@@ -44,16 +44,16 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
 
     override fun createTrade(
         storeId: String,
-        cost: CostObj,
-        purchasing: PurchasingObj,
-        limit: Map<String, StoreLimit>
+        cost: Cost,
+        purchasing: Purchasing,
+        storeLimits: Set<StoreLimit>
     ) {
         return transaction(db = DatabaseUtils.DATABASE) {
             TradeDBEntity.new{
                 this.store = StoreDBEntity.findById(storeId)!!
                 this.cost = cost
                 this.purchasing = purchasing
-                this.storeLimits = storeLimits.toMutableMap()
+                this.storeLimits = storeLimits
             }
         }
     }

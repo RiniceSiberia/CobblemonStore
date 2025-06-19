@@ -7,6 +7,7 @@ import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
@@ -19,61 +20,75 @@ import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 
 @Serializable(with = TradeSerializer::class)
 class Trade(
     val id : Int,
     val storeId : String,
-    cost : CostObj,
-    purchasing : PurchasingObj,
-    storeLimits : Map<String,StoreLimit>
+    cost : Cost,
+    purchasing : Purchasing,
+    storeLimits : Set<StoreLimit>
 ){
     val supStore
         get() = DAOWharf.storeLibrary[storeId]
 
-    var cost : CostObj = cost
+    var cost : Cost = cost
         private set(value) {
             saveChange()
             field = value
         }
 
-    var purchasing: PurchasingObj = purchasing
+    var purchasing: Purchasing = purchasing
         private set(value) {
             saveChange()
             field = value
         }
 
-    val storeLimits : MutableMap<String, StoreLimit> = object : MutableMap<String, StoreLimit> {
-        private val map = storeLimits.toMutableMap()
+    val storeLimits : MutableSet<StoreLimit> = object : MutableSet<StoreLimit> {
+        val set = storeLimits.toMutableSet()
 
-        override val keys: MutableSet<String>
-            get() = map.keys
-        override val values: MutableCollection<StoreLimit>
-            get() = map.values
-        override val entries: MutableSet<MutableMap.MutableEntry<String, StoreLimit>>
-            get() = map.entries
+        override fun add(element: StoreLimit): Boolean {
+            val clazz = element::class
+            if (clazz in set.map { it::class }) return false
+            return set.add(element).also { saveChange() }
+        }
 
-        override fun put(
-            key: String,
-            value: StoreLimit
-        ): StoreLimit? = map.put(key, value).also { saveChange() }
+        override fun addAll(elements: Collection<StoreLimit>): Boolean {
+            val clazz = elements.map { it::class }
+            if (clazz.size != clazz.toSet().size) return false
+            if ((clazz intersect set.map { it::class }).isNotEmpty()) return false
+            return set.addAll(elements).also {
+                saveChange()
+            }
+        }
 
-        override fun remove(key: String): StoreLimit? = map.remove(key).also { saveChange() }
+        override fun clear() = set.clear().also { saveChange() }
 
-        override fun putAll(from: Map<out String, StoreLimit>) = map.putAll(from).also { saveChange() }
+        override fun iterator(): MutableIterator<StoreLimit> {
+            return set.iterator()
+        }
 
-        override fun clear() = map.clear().also { saveChange() }
+        override fun remove(element: StoreLimit): Boolean {
+            return set.remove(element).also { saveChange() }
+        }
+
+        override fun removeAll(elements: Collection<StoreLimit>): Boolean {
+            return set.removeAll(elements).also { saveChange() }
+        }
+
+        override fun retainAll(elements: Collection<StoreLimit>): Boolean {
+            return set.retainAll(elements).also { saveChange() }
+        }
 
         override val size: Int
-            get() = map.size
+            get() = set.size
 
-        override fun isEmpty(): Boolean = map.isEmpty()
+        override fun isEmpty(): Boolean =set.isEmpty()
 
-        override fun containsKey(key: String): Boolean = map.containsKey(key)
+        override fun contains(element: StoreLimit): Boolean = set.contains(element)
 
-        override fun containsValue(value: StoreLimit): Boolean = map.containsValue(value)
-
-        override fun get(key: String): StoreLimit? = map[key]
+        override fun containsAll(elements: Collection<StoreLimit>): Boolean = set.containsAll(elements)
     }
 
 
@@ -85,18 +100,21 @@ class Trade(
                 player.sendSystemMessage(Component.translatable("msg.cobblemon_store.not_enough_money"))
                 return false
             }
-            if (storeLimits.isNotEmpty() && !storeLimits.any { it.value.couldBuy(player) }){
+            if (storeLimits.isNotEmpty() && !storeLimits.any { it.couldBuy(player) }){
                 player.sendSystemMessage(Component.translatable("msg.cobblemon_store.sold_out"))
                 return false
             }
             cost.pay(player).also { if(!it) return false }
-            storeLimits.forEach { it.value.consume(player) }
+            storeLimits.forEach { it.consume(player) }
             val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
             val purchasingItem = purchasing.purchasing(player)
             warehouse.put(purchasingItem.index,purchasingItem)
             player.sendSystemMessage(
                 purchasing.purchasingMsgComponent().also {
-                    it.append(cost.costMsgComponent())
+                    val msg = cost.costMsgComponent()
+                    if (msg != Component.empty()){
+                        it.append(msg)
+                    }
                 }
             )
             return true
@@ -114,33 +132,79 @@ class Trade(
 
     val showedItemStack : ItemStack
         get(){
-            if (purchasing is ItemPurchasingObj){
-                return (purchasing as ItemPurchasingObj).stack.copy().also {
-                    it[DataComponents.CUSTOM_NAME] = Component.translatable(
-                        "item.cobblemon_store.sell_menu.slot.name",
-                        Component.translatable("item.cobblemon_store.sell_menu.slot.sell"),
-                        (purchasing as ItemPurchasingObj).stack.displayName
-                    ).withStyle(ChatFormatting.GOLD)
-                    it.set(
-                        Registrations.TagTypes.TRADE_ITEM_TAG,
-                        Gson().toJson(kJsonConfig.encodeToString(serializer(),this))
-                    )
+            val purchasingIsMoney = purchasing is MoneyPurchasing
+            val costIsMoney = cost is MoneyCost
+            val typeComponent = Component.translatable(
+                "item.cobblemon_store.sell_menu.slot." +
+                        if (purchasingIsMoney){
+                            if (costIsMoney){
+                                "financial"
+                            }else{
+                                "buy"
+                            }
+                        }else{
+                            if (costIsMoney){
+                                "sell"
+                            }else{
+                                "trade"
+                            }
+                        }
+            ).withStyle(ChatFormatting.BOLD).apply {
+                if (purchasingIsMoney){
+                    if (costIsMoney){
+                        withStyle(ChatFormatting.GOLD)
+                    }else{
+                        withStyle(ChatFormatting.AQUA)
+                    }
+                }else{
+                    if (costIsMoney){
+                        withStyle(ChatFormatting.GREEN)
+                    }else{
+                        withStyle(ChatFormatting.WHITE)
+                    }
                 }
-            }else if (cost is ItemCostObj){
-                return (cost as ItemCostObj).stack.copy().also {
+            }
+            val stack = (purchasing as ItemPurchasing).stack.copy()
+            stack[DataComponents.CUSTOM_NAME] =
+                typeComponent.append(
+                    if (purchasingIsMoney){
+                        if (costIsMoney){
+                            Items.EMERALD
+                        }else{
+                            withStyle(ChatFormatting.AQUA)
+                        }
+                    }else{
+                        if (costIsMoney){
+                            (purchasing as ItemPurchasing).stack.displayName
+                        }else{
+                            withStyle(ChatFormatting.WHITE)
+                        }
+                    }
+
+                )
+
+
+            if (purchasing is ItemPurchasing){
+
+                 stack.set(
+                     Registrations.TagTypes.TRADE_ITEM_TAG,
+                     kJsonConfig.encodeToString(this)
+                 )
+
+
+                return stack
+            }else if (cost is ItemCost){
+                return (cost as ItemCost).stack.copy().also {
                     it.set(DataComponents.CUSTOM_NAME,
                         Component.translatable(
                             "item.cobblemon_store.sell_menu.slot.name",
                             Component.translatable("item.cobblemon_store.sell_menu.slot.buy"),
-                            Component.translatable(
-                                "item.cobblemon_store.sell_menu.slot.money",
-                                purchasing
-                            )
+                            purchasing.purchasingTooltipComponent()
                         )
                     )
                     it.set(
                         Registrations.TagTypes.TRADE_ITEM_TAG,
-                        Gson().toJson(kJsonConfig.encodeToString(serializer(),this))
+                        kJsonConfig.encodeToString(this)
                     )
                 }
 
@@ -152,10 +216,10 @@ class Trade(
 object TradeSerializer : KSerializer<Trade> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("trade"){
         element("id",Int.serializer().descriptor)
-        element("storeId",String.serializer().descriptor)
-        element("cost",CostObj.serializer().descriptor)
-        element("purchasing",PurchasingObj.serializer().descriptor)
-        element("storeLimits",MapSerializer(String.serializer(),StoreLimit.serializer()).descriptor)
+        element("store_id",String.serializer().descriptor)
+        element("cost",Cost.serializer().descriptor)
+        element("purchasing",Purchasing.serializer().descriptor)
+        element("store_limits",SetSerializer(StoreLimit.serializer()).descriptor)
     }
 
     override fun serialize(
@@ -165,9 +229,18 @@ object TradeSerializer : KSerializer<Trade> {
         val composite = encoder.beginStructure(descriptor)
         composite.encodeIntElement(descriptor, 0, value.id)
         composite.encodeStringElement(descriptor, 1, value.storeId)
-        composite.encodeSerializableElement(descriptor, 2, CostObj.serializer(), value.cost)
-        composite.encodeSerializableElement(descriptor, 3, PurchasingObj.serializer(), value.purchasing)
-        composite.encodeSerializableElement(descriptor, 4, MapSerializer(String.serializer(),StoreLimit.serializer()), value.storeLimits)
+        composite.encodeSerializableElement(descriptor, 2,
+            Cost.serializer(),
+            value.cost
+        )
+        composite.encodeSerializableElement(descriptor, 3,
+            Purchasing.serializer(),
+            value.purchasing)
+
+        composite.encodeSerializableElement(descriptor, 4,
+            SetSerializer(StoreLimit.serializer()),
+            value.storeLimits.toSet()
+        )
         composite.endStructure(descriptor)
     }
 
@@ -175,20 +248,20 @@ object TradeSerializer : KSerializer<Trade> {
         val dec = decoder.beginStructure(descriptor)
         var id = -1
         lateinit var storeId : String
-        lateinit var cost : CostObj
-        lateinit var purchasing : PurchasingObj
-        val storeLimits = mutableMapOf<String, StoreLimit>()
+        lateinit var cost : Cost
+        lateinit var purchasing : Purchasing
+        val storeLimits = mutableSetOf<StoreLimit>()
         loop@ while (true) {
             when (val index = dec.decodeElementIndex(descriptor)) {
                 0 -> id = dec.decodeIntElement(descriptor, index)
                 1 -> storeId = dec.decodeStringElement(descriptor, index)
-                2 -> cost = dec.decodeSerializableElement(descriptor, index, CostObj.serializer())
-                3 -> purchasing = dec.decodeSerializableElement(descriptor, index, PurchasingObj.serializer())
-                4 -> storeLimits.putAll(
+                2 -> cost = dec.decodeSerializableElement(descriptor, index, Cost.serializer())
+                3 -> purchasing = dec.decodeSerializableElement(descriptor, index, Purchasing.serializer())
+                4 -> storeLimits.addAll(
                     dec.decodeSerializableElement(
                         descriptor,
                         index,
-                        MapSerializer(String.serializer(), StoreLimit.serializer())
+                        SetSerializer( StoreLimit.serializer())
                     )
                 )
                 CompositeDecoder.DECODE_DONE -> break@loop

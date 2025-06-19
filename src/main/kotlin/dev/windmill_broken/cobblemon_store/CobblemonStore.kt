@@ -3,6 +3,7 @@ package dev.windmill_broken.cobblemon_store
 import com.mojang.logging.LogUtils
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.event.StoreEvents
+import dev.windmill_broken.cobblemon_store.event.TestEvent
 import net.minecraft.core.RegistryAccess
 import net.minecraft.server.MinecraftServer
 import net.neoforged.bus.api.IEventBus
@@ -32,9 +33,8 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
         }
         with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)
+            addListener(TestEvent::onTestEvent)
         }
-
-
     }
 
     @SubscribeEvent

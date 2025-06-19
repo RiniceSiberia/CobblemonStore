@@ -68,14 +68,14 @@ object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
                         MapSerializer(
                             UUIDSerializer,
                             Warehouse.serializer()
-                        ),this),
+                        ),this.toMap()),
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING
             )
-            CobblemonStore.Companion.LOGGER.info("warehouse.json 已保存到: {}", warehousesFile)
+            CobblemonStore.Companion.LOGGER.info("warehouses.json 已保存到: {}", warehousesFile)
         } catch (e: Exception) {
-            CobblemonStore.Companion.LOGGER.error("保存 warehouse.json 失败", e)
+            CobblemonStore.Companion.LOGGER.error("保存 warehouses.json 失败", e)
         }
     }
 }
