@@ -8,8 +8,8 @@ package dev.windmill_broken.cobblemon_store.bo.trade
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
-import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.ResourceLocationSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -21,9 +21,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.Items
 import java.math.BigDecimal
 import java.util.*
 import kotlin.math.max
@@ -35,17 +33,17 @@ sealed interface Cost {
 
     fun enough(player: ServerPlayer): Boolean
 
-    fun pay(player: ServerPlayer) : Boolean
+    fun pay(player: ServerPlayer): Boolean
 
-    fun costMsgComponent() : MutableComponent
+    fun costMsgComponent(): MutableComponent
 
-    fun costToolTipComponent() : MutableComponent
+    fun costToolTipComponent(): MutableComponent
 
 }
 
 @Serializable
 @SerialName("FREE_COST")
-data object FreeCost : Cost{
+data object FreeCost : Cost {
     override fun enough(player: ServerPlayer): Boolean {
         return true
     }
@@ -53,6 +51,7 @@ data object FreeCost : Cost{
     override fun pay(player: ServerPlayer): Boolean {
         return true
     }
+
     override fun costMsgComponent(): MutableComponent {
         return Component.empty()
     }
@@ -67,40 +66,40 @@ data object FreeCost : Cost{
 class MoneyCost(
     val value: BigDecimal,
     @SerialName("currency_type")
-    val currencyType : String = MoneyUtils.primaryCurrency.key().value()
-) : Cost{
+    val currencyType: String = MoneyUtils.primaryCurrency.key().value()
+) : Cost {
 
     constructor(
-        value : Int
+        value: Int
     ) : this(value.toBigDecimal())
 
     constructor(
-        value : Double
+        value: Double
     ) : this(value.toBigDecimal())
 
     constructor(
-        value : String
+        value: String
     ) : this(value.toBigDecimal())
 
 
     override fun enough(player: ServerPlayer): Boolean {
-        val wallet = MoneyUtils.getCurrency(player,currencyType)
+        val wallet = MoneyUtils.getCurrency(player, currencyType)
         return wallet >= value
     }
 
     override fun pay(player: ServerPlayer): Boolean {
 //        if (player.isCreative) return true
-        val origin = MoneyUtils.getCurrency(player,currencyType)
-        val current = MoneyUtils.minusMoney(player,value,currencyType)
+        val origin = MoneyUtils.getCurrency(player, currencyType)
+        val current = MoneyUtils.minusMoney(player, value, currencyType)
         return origin > current
     }
 
     override fun costMsgComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.money",String.format("%.2f", value))
+        return Component.translatable("msg.cobblemon_store.cost.money", String.format("%.2f", value))
     }
 
     override fun costToolTipComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.slot.cost.money",String.format("%.2f", value))
+        return Component.translatable("msg.cobblemon_store.slot.cost.money", String.format("%.2f", value))
     }
 }
 
@@ -110,17 +109,17 @@ class MoneyCost(
 @Serializable
 @SerialName("SIMPLE_ITEM_COST")
 class SimpleItemCost(
-    val item : ResourceLocation,
-    val count : Int = 1
-) : Cost{
+    val item: ResourceLocation,
+    val count: Int = 1
+) : Cost {
 
-    val tempStack : ItemStack?
-        get(){
+    val tempStack: ItemStack?
+        get() {
             val got = BuiltInRegistries.ITEM.getOptional(item)
-            return if (got.isEmpty){
+            return if (got.isEmpty) {
                 null
-            }else{
-                ItemStack(got.get(),count)
+            } else {
+                ItemStack(got.get(), count)
             }
         }
 
@@ -146,8 +145,8 @@ class SimpleItemCost(
         }
         var countVariable = count
         var repeatNum = 0
-        while(countVariable>= 0){
-            val target = targets.firstOrNull{it.count > 0}?:return false.also {
+        while (countVariable >= 0) {
+            val target = targets.firstOrNull { it.count > 0 } ?: return false.also {
                 player.sendSystemMessage(
                     Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
                 )
@@ -155,11 +154,11 @@ class SimpleItemCost(
                     "Player ${player.name} attempted to pay $countVariable of ${this.item}," +
                             " but only ${targets.sumOf { it.count }} were available in inventory.")
             }
-            val shrinkCount = max(countVariable,target.count)
+            val shrinkCount = max(countVariable, target.count)
             target.shrink(shrinkCount)
             countVariable -= shrinkCount
             repeatNum++
-            if (repeatNum >= 1000){
+            if (repeatNum >= 1000) {
                 Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
                 CobblemonStore.Companion.LOGGER.error("Aborting loop: exceeded maximum allowed iterations (100000). Possible infinite loop.")
             }
@@ -168,10 +167,10 @@ class SimpleItemCost(
     }
 
     override fun costMsgComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.item", tempStack?.hoverName?:"",count)
+        return Component.translatable("msg.cobblemon_store.cost.item", tempStack?.hoverName ?: "", count)
     }
 
     override fun costToolTipComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.slot.cost.item", tempStack?.hoverName?:"",count)
+        return Component.translatable("msg.cobblemon_store.slot.cost.item", tempStack?.hoverName ?: "", count)
     }
 }

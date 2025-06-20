@@ -3,13 +3,10 @@ package dev.windmill_broken.cobblemon_store.utils
 import net.impactdev.impactor.api.economy.EconomyService
 import net.impactdev.impactor.api.economy.accounts.Account
 import net.impactdev.impactor.api.economy.currency.Currency
-import net.kyori.adventure.key.Key
-import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
-import net.kyori.adventure.text.Component as KComponent
 
 object MoneyUtils {
 
@@ -26,14 +23,14 @@ object MoneyUtils {
             .currencies()
             .primary()
 
-    fun getCurrencyType(key : String) : Currency? {
+    fun getCurrencyType(key: String): Currency? {
         return currencyTypes[key]
     }
 
-    fun String.withCurrencySign(key: String) : String{
+    fun String.withCurrencySign(key: String): String {
         return (getCurrencyType(key)?.symbol()
-            ?.let{toString() +" "}
-            ?:"")  + this
+            ?.let { toString() + " " }
+            ?: "") + this
     }
 
     /**
@@ -42,64 +39,64 @@ object MoneyUtils {
      * @return 玩家的钱
      */
     fun getCurrency(
-        player : ServerPlayer,
-        currencyKey : String = primaryCurrency.key().value()
-    ): BigDecimal{
-        val future: CompletableFuture<Account?>
-        = EconomyService.instance()
+        player: ServerPlayer,
+        currencyKey: String = primaryCurrency.key().value()
+    ): BigDecimal {
+        val future: CompletableFuture<Account?> = EconomyService.instance()
             .account(
                 getCurrencyType(currencyKey),
-                player.getUUID())
+                player.uuid
+            )
         return future.thenApply { account ->
-            return@thenApply account?.balance()?: BigDecimal.ZERO
+            return@thenApply account?.balance() ?: BigDecimal.ZERO
         }.getNow(BigDecimal.ZERO)
     }
 
     fun setMoney(
         player: Player,
         value: BigDecimal,
-        currencyKey : String = primaryCurrency.key().value()
-    ) : BigDecimal{
-        val future: CompletableFuture<Account?>
-        = EconomyService.instance()
+        currencyKey: String = primaryCurrency.key().value()
+    ): BigDecimal {
+        val future: CompletableFuture<Account?> = EconomyService.instance()
             .account(
                 getCurrencyType(currencyKey),
-                player.getUUID())
+                player.uuid
+            )
         return future.thenApply { account ->
             account?.set(value)
-            return@thenApply account?.balance()?: BigDecimal.ZERO
+            return@thenApply account?.balance() ?: BigDecimal.ZERO
         }.getNow(BigDecimal.ZERO)
     }
 
     fun addMoney(
         player: Player,
         value: BigDecimal,
-        currencyKey : String = primaryCurrency.key().value()
-    ) : BigDecimal{
-        val future: CompletableFuture<Account?>
-        = EconomyService.instance()
+        currencyKey: String = primaryCurrency.key().value()
+    ): BigDecimal {
+        val future: CompletableFuture<Account?> = EconomyService.instance()
             .account(
                 getCurrencyType(currencyKey),
-                player.getUUID())
+                player.uuid
+            )
         return future.thenApply { account ->
             account?.deposit(value)
-            return@thenApply account?.balance()?: BigDecimal.ZERO
+            return@thenApply account?.balance() ?: BigDecimal.ZERO
         }.getNow(BigDecimal.ZERO)
     }
 
     fun minusMoney(
         player: Player,
         value: BigDecimal,
-        currencyKey : String = primaryCurrency.key().value()
-    ) : BigDecimal{
-        val future: CompletableFuture<Account?>
-        = EconomyService.instance()
+        currencyKey: String = primaryCurrency.key().value()
+    ): BigDecimal {
+        val future: CompletableFuture<Account?> = EconomyService.instance()
             .account(
                 getCurrencyType(currencyKey),
-                player.getUUID())
+                player.uuid
+            )
         return future.thenApply { account ->
             account?.withdraw(value)
-            return@thenApply account?.balance()?: BigDecimal.ZERO
+            return@thenApply account?.balance() ?: BigDecimal.ZERO
         }.getNow(BigDecimal.ZERO)
     }
 }
