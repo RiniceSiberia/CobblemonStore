@@ -89,7 +89,7 @@ class MoneyCost(
     }
 
     override fun pay(player: ServerPlayer): Boolean {
-        if (player.isCreative) return true
+//        if (player.isCreative) return true
         val origin = MoneyUtils.getCurrency(player,currencyType)
         val current = MoneyUtils.minusMoney(player,value,currencyType)
         return origin > current
@@ -133,7 +133,7 @@ class SimpleItemCost(
     }
 
     override fun pay(player: ServerPlayer): Boolean {
-        if (player.isCreative) return true
+//        if (player.isCreative) return true
 
         val targets = player.inventory.items.filter {
             val registerKey = BuiltInRegistries.ITEM.getKey(it.item)

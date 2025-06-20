@@ -1,5 +1,6 @@
 package dev.windmill_broken.cobblemon_store.menu
 
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.Container
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.Slot
@@ -18,7 +19,9 @@ class StoreSlot(
     y
 ){
     override fun mayPickup(player: Player): Boolean {
-        onclick(player)
+        if (player is ServerPlayer){
+            onclick(player)
+        }
         return false
     }
 
