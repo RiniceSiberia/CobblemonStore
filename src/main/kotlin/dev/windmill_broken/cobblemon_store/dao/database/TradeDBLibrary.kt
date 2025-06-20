@@ -4,6 +4,7 @@ import dev.windmill_broken.cobblemon_store.bo.trade.Cost
 import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
+import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
 import dev.windmill_broken.cobblemon_store.dao.database.dto.StoreDBEntity
@@ -34,6 +35,7 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
                 Trade(
                     id = it.id.value,
                     storeId = it.store.id.value,
+                    creator = it.creator,
                     cost = it.cost,
                     purchasing = it.purchasing,
                     storeLimits = it.storeLimits
@@ -44,6 +46,7 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
 
     override fun createTrade(
         storeId: String,
+        creator: TradeCreator,
         cost: Cost,
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
@@ -51,6 +54,7 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
         return transaction(db = DatabaseUtils.DATABASE) {
             TradeDBEntity.new{
                 this.store = StoreDBEntity.findById(storeId)!!
+                this.creator = creator
                 this.cost = cost
                 this.purchasing = purchasing
                 this.storeLimits = storeLimits
@@ -66,6 +70,7 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
                 Trade(
                     id = it.id.value,
                     storeId = it.store.id.value,
+                    creator = it.creator,
                     cost = it.cost,
                     purchasing = it.purchasing,
                     storeLimits = it.storeLimits
@@ -78,6 +83,7 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
         return transaction(db = DatabaseUtils.DATABASE) {
             TradeDBTable.update({ TradeDBTable.id.eq(trade.id) }){
                 it[this.storeId] = trade.storeId
+                it[this.creator] = trade.creator
                 it[this.cost] = trade.cost
                 it[this.purchasing] = trade.purchasing
                 it[this.storeLimits] = trade.storeLimits

@@ -5,6 +5,7 @@ import dev.windmill_broken.cobblemon_store.bo.trade.Cost
 import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
 import dev.windmill_broken.cobblemon_store.bo.trade.Trade
+import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
@@ -25,6 +26,7 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
 
     override fun createTrade(
         storeId: String,
+        creator: TradeCreator,
         cost: Cost,
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
@@ -32,6 +34,7 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
         val t = Trade(
             nextEmptyIndex,
             storeId,
+            creator,
             cost,
             purchasing,
             storeLimits

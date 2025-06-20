@@ -12,10 +12,10 @@
 
   "item.cobblemon_store.sell_menu.slot.name" : "[%1$s]:%2$s",
   "item.cobblemon_store.sell_menu.slot.cost" : "Requires: %1$s * %2$s to purchase",
-  "item.cobblemon_store.sell_menu.slot.reserve.global" : "Current stock: %1$s/%2$s",
+  "item.cobblemon_store.sell_menu.slot.reserve.total_amount" : "Current stock: %1$s/%2$s",
   "item.cobblemon_store.sell_menu.slot.reserve.poll_limit" : "Player's purchase limit: %1$s/%2$s",
-  "item.cobblemon_store.sell_menu.slot.reserve.time_limit" : "This item will be taken off the market at %1$s. The remaining time is: %2$s.",
-  "item.cobblemon_store.sell_menu.slot.reserve.time_limit.expired":"This item has expired!",
+  "item.cobblemon_store.sell_menu.slot.reserve.expirable" : "This item will be taken off the market at %1$s. The remaining time is: %2$s.",
+  "item.cobblemon_store.sell_menu.slot.reserve.expirable.expired":"This item has expired!",
 
   "unit.cobblemon_store.time.week": "%1$s week(s)",
   "unit.cobblemon_store.time.day": "%1$s day(s)",

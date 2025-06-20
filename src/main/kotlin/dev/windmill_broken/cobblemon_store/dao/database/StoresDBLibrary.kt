@@ -4,6 +4,7 @@ import dev.windmill_broken.cobblemon_store.bo.store.Store
 import dev.windmill_broken.cobblemon_store.bo.trade.Cost
 import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
+import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
 import dev.windmill_broken.cobblemon_store.dao.database.dto.StoreDBEntity
@@ -38,16 +39,12 @@ object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
     override fun create(
         id: String,
         name: String,
-        description: String?,
-        tradeValues: List<Triple<Cost, Purchasing, Set<StoreLimit>>>
+        description: String?
     ) {
         transaction(db = DatabaseUtils.DATABASE) {
             StoreDBEntity.new(id) {
                 this.name = name
                 this.description = description
-            }
-            tradeValues.forEach { (cost,purchasing,storeLimits) ->
-                TradeDBLibrary.createTrade(id,cost,purchasing,storeLimits)
             }
         }
     }

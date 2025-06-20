@@ -8,8 +8,11 @@ import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.TimeUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.CalendarSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonClassDiscriminator
 import net.minecraft.ChatFormatting
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -19,53 +22,50 @@ import java.util.*
 /**
  * 实现该接口为有不同程度上的存货上限
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
+@JsonClassDiscriminator("store_limit_type")
 sealed interface StoreLimit{
 
-    val superTradeId : Int
-
-    val superTrade
-        get() = DAOWharf.tradeLibrary.get(superTradeId)
-
-    val type : String
+    val limitName : String
 
     fun couldBuy(player: Player) : Boolean
 
-    fun consume(player: Player)
+    fun consume(player: Player,superTrade : Trade)
 
-    fun restock()
+    fun restock(superTrade : Trade)
 
     fun getTooltipComponent(player: Player) : MutableComponent
 }
 
 @Serializable
-class GlobalStoreLimit(
-    override val superTradeId: Int,
+@SerialName("TOTAL_AMOUNT")
+class TotalAmountStoreLimit(
     val limit : Int,
     var sales : Int = 0,
 //    val identity : Set<StoreIdentity> = emptySet()
 ) : StoreLimit{
 
-    override val type: String
-        get() = "global"
+    override val limitName: String
+        get() = "total_amount"
 
     override fun couldBuy(player: Player): Boolean {
         return sales < limit
     }
 
-    override fun consume(player: Player) {
+    override fun consume(player: Player,superTrade : Trade) {
         sales++
-        superTrade?.saveChange()
+        superTrade.saveChange()
     }
 
-    override fun restock() {
+    override fun restock(superTrade : Trade) {
         sales = 0
-        superTrade?.saveChange()
+        superTrade.saveChange()
     }
 
     override fun getTooltipComponent(player: Player): MutableComponent {
         return Component.translatable(
-            "item.cobblemon_store.sell_menu.slot.reserve.global",
+            "item.cobblemon_store.sell_menu.slot.reserve.total_amount",
             limit-sales,
             limit
             ).apply {
@@ -78,27 +78,28 @@ class GlobalStoreLimit(
 }
 
 @Serializable
+@SerialName("POLL")
 open class PollLimit(
-    override val superTradeId: Int,
     open val limit : Int,
+    @SerialName("player_bought")
     val playerBought : MutableMap<UUID, Int> = mutableMapOf()
 ) : StoreLimit{
 
-    override val type: String
+    override val limitName: String
         get() = "poll_limit"
 
     override fun couldBuy(player: Player): Boolean {
         return playerBought.getOrDefault(player.uuid, 0) < limit
     }
 
-    override fun consume(player: Player) {
+    override fun consume(player: Player, superTrade: Trade) {
         playerBought[player.uuid] = playerBought.getOrDefault(player.uuid, 0) + 1
-        superTrade?.saveChange()
+        superTrade.saveChange()
     }
 
-    override fun restock() {
+    override fun restock(superTrade: Trade) {
         playerBought.clear()
-        superTrade?.saveChange()
+        superTrade.saveChange()
     }
 
     override fun getTooltipComponent(player: Player): MutableComponent {
@@ -115,8 +116,9 @@ open class PollLimit(
 }
 
 @Serializable
-class TimeLimitStoreLimit(
-    override val superTradeId: Int,
+@SerialName("EXPIRABLE")
+class ExpirableStoreLimit(
+    @SerialName("time_stamp")
     var timeStamp : Long = let {
         val current = Calendar.getInstance()
         current.add(Calendar.DATE,1)
@@ -130,22 +132,22 @@ class TimeLimitStoreLimit(
     val isExpired
         get() = timeStamp <= Calendar.getInstance().timeInMillis
 
-    override val type: String
-        get() = "time_limit"
+    override val limitName: String
+        get() = "expirable"
 
     override fun couldBuy(player: Player): Boolean {
         return Calendar.getInstance(TimeZone.getTimeZone("UTC")) <= expirationTime
     }
 
-    override fun consume(player: Player) {
-        superTrade?.saveChange()
+    override fun consume(player: Player, superTrade: Trade) {
+        superTrade.saveChange()
     }
 
-    override fun restock() {
+    override fun restock(superTrade: Trade) {
         val tomorrow = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         tomorrow.add(Calendar.HOUR, 1)
         timeStamp = tomorrow.timeInMillis
-        superTrade?.saveChange()
+        superTrade.saveChange()
     }
 
     override fun getTooltipComponent(player: Player): MutableComponent {

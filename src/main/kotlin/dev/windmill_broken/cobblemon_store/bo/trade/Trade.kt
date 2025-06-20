@@ -1,12 +1,12 @@
 package dev.windmill_broken.cobblemon_store.bo.trade
 
-import com.google.gson.Gson
+import com.cobblemon.mod.common.CobblemonItems
 import dev.windmill_broken.cobblemon_store.Registrations
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,7 +25,9 @@ import net.minecraft.world.item.Items
 @Serializable(with = TradeSerializer::class)
 class Trade(
     val id : Int,
+    @SerialName("store_id")
     val storeId : String,
+    val creator: TradeCreator = ServerTradeCreator,
     cost : Cost,
     purchasing : Purchasing,
     storeLimits : Set<StoreLimit>
@@ -105,10 +107,17 @@ class Trade(
                 return false
             }
             cost.pay(player).also { if(!it) return false }
-            storeLimits.forEach { it.consume(player) }
+            storeLimits.forEach { it.consume(player,this) }
             val warehouse = DAOWharf.warehouseLibrary.getOrCreate(player.uuid)
-            val purchasingItem = purchasing.purchasing(player)
-            warehouse.put(purchasingItem.index,purchasingItem)
+            val purchasingItem = purchasing.purchasing(player,this)
+            if (warehouse.automaticAcquisition
+                && ((purchasingItem.creator is ServerTradeCreator)
+                        ||(purchasingItem.creator is PlayerTradeCreator
+                        && (purchasingItem.creator as PlayerTradeCreator).playerId == player))){
+                purchasingItem.retrieve(warehouse)
+            }else{
+                warehouse.put(warehouse.nextEmptyIndex,purchasingItem)
+            }
             player.sendSystemMessage(
                 purchasing.purchasingMsgComponent().also {
                     val msg = cost.costMsgComponent()
@@ -164,52 +173,59 @@ class Trade(
                     }
                 }
             }
-            val stack = (purchasing as ItemPurchasing).stack.copy()
-            stack[DataComponents.CUSTOM_NAME] =
-                typeComponent.append(
-                    if (purchasingIsMoney){
-                        if (costIsMoney){
-                            Items.EMERALD
-                        }else{
-                            withStyle(ChatFormatting.AQUA)
+
+            val stack = when (purchasing) {
+                is ItemStackPurchasing -> {
+                    (purchasing as ItemStackPurchasing).stack.copy()
+                }
+                is PokemonPurchasing -> {
+                    ItemStack(CobblemonItems.POKE_BALL)
+                }
+                is MoneyPurchasing -> {
+                    when(cost){
+                        is SimpleItemCost -> {
+                            (cost as SimpleItemCost).tempStack?: ItemStack(Items.BARRIER)
                         }
-                    }else{
-                        if (costIsMoney){
-                            (purchasing as ItemPurchasing).stack.displayName
-                        }else{
-                            withStyle(ChatFormatting.WHITE)
+                        is MoneyCost -> {
+                            ItemStack(Items.EMERALD)
+                        }
+                        is FreeCost -> {
+                            ItemStack(Items.EMERALD)
                         }
                     }
-
-                )
-
-
-            if (purchasing is ItemPurchasing){
-
-                 stack.set(
-                     Registrations.TagTypes.TRADE_ITEM_TAG,
-                     kJsonConfig.encodeToString(this)
-                 )
-
-
-                return stack
-            }else if (cost is ItemCost){
-                return (cost as ItemCost).stack.copy().also {
-                    it.set(DataComponents.CUSTOM_NAME,
-                        Component.translatable(
-                            "item.cobblemon_store.sell_menu.slot.name",
-                            Component.translatable("item.cobblemon_store.sell_menu.slot.buy"),
-                            purchasing.purchasingTooltipComponent()
-                        )
-                    )
-                    it.set(
-                        Registrations.TagTypes.TRADE_ITEM_TAG,
-                        kJsonConfig.encodeToString(this)
-                    )
                 }
-
             }
-            return ItemStack.EMPTY
+            val originName = when (purchasing) {
+                is ItemStackPurchasing -> {
+                    //买物品直接给
+                    (purchasing as ItemStackPurchasing).stack.displayName
+                }
+                is PokemonPurchasing -> {
+                    (purchasing as PokemonPurchasing).pokemon.getDisplayName()
+                }
+                is MoneyPurchasing -> {
+                    //追求的是money,分情况
+                    when(cost){
+                        is SimpleItemCost -> {
+                            ((cost as SimpleItemCost).tempStack?: ItemStack(Items.BARRIER)).displayName
+                        }
+                        is MoneyCost -> {
+                            Component.literal("")
+                        }
+                        is FreeCost -> {
+                            Component.literal("")
+                        }
+                    }
+                }
+            }
+            stack[DataComponents.CUSTOM_NAME] =
+                typeComponent.append(originName)
+
+            stack.set(
+                Registrations.TagTypes.TRADE_ITEM_TAG,
+                kJsonConfig.encodeToString(this)
+            )
+            return stack
         }
 }
 
@@ -217,6 +233,7 @@ object TradeSerializer : KSerializer<Trade> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("trade"){
         element("id",Int.serializer().descriptor)
         element("store_id",String.serializer().descriptor)
+        element("trade_creator",TradeCreator.serializer().descriptor)
         element("cost",Cost.serializer().descriptor)
         element("purchasing",Purchasing.serializer().descriptor)
         element("store_limits",SetSerializer(StoreLimit.serializer()).descriptor)
@@ -229,15 +246,19 @@ object TradeSerializer : KSerializer<Trade> {
         val composite = encoder.beginStructure(descriptor)
         composite.encodeIntElement(descriptor, 0, value.id)
         composite.encodeStringElement(descriptor, 1, value.storeId)
-        composite.encodeSerializableElement(descriptor, 2,
+        composite.encodeSerializableElement(descriptor,2,
+            TradeCreator.serializer(),
+            value.creator
+        )
+        composite.encodeSerializableElement(descriptor, 3,
             Cost.serializer(),
             value.cost
         )
-        composite.encodeSerializableElement(descriptor, 3,
+        composite.encodeSerializableElement(descriptor, 4,
             Purchasing.serializer(),
             value.purchasing)
 
-        composite.encodeSerializableElement(descriptor, 4,
+        composite.encodeSerializableElement(descriptor, 5,
             SetSerializer(StoreLimit.serializer()),
             value.storeLimits.toSet()
         )
@@ -248,6 +269,7 @@ object TradeSerializer : KSerializer<Trade> {
         val dec = decoder.beginStructure(descriptor)
         var id = -1
         lateinit var storeId : String
+        lateinit var creator : TradeCreator
         lateinit var cost : Cost
         lateinit var purchasing : Purchasing
         val storeLimits = mutableSetOf<StoreLimit>()
@@ -255,9 +277,10 @@ object TradeSerializer : KSerializer<Trade> {
             when (val index = dec.decodeElementIndex(descriptor)) {
                 0 -> id = dec.decodeIntElement(descriptor, index)
                 1 -> storeId = dec.decodeStringElement(descriptor, index)
-                2 -> cost = dec.decodeSerializableElement(descriptor, index, Cost.serializer())
-                3 -> purchasing = dec.decodeSerializableElement(descriptor, index, Purchasing.serializer())
-                4 -> storeLimits.addAll(
+                2 -> creator = dec.decodeSerializableElement(descriptor, index, TradeCreator.serializer())
+                3 -> cost = dec.decodeSerializableElement(descriptor, index, Cost.serializer())
+                4 -> purchasing = dec.decodeSerializableElement(descriptor, index, Purchasing.serializer())
+                5 -> storeLimits.addAll(
                     dec.decodeSerializableElement(
                         descriptor,
                         index,
@@ -269,7 +292,7 @@ object TradeSerializer : KSerializer<Trade> {
             }
         }
         dec.endStructure(descriptor)
-        assert(id > 0)
-        return Trade(id,storeId,cost,purchasing,storeLimits)
+        assert(id >= 0)
+        return Trade(id,storeId,creator,cost,purchasing,storeLimits)
     }
 }

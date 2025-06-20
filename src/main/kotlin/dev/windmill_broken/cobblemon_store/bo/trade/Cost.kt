@@ -1,6 +1,7 @@
 @file:UseSerializers(
     ItemStackSerializer::class,
-    BigDecimalSerializer::class
+    BigDecimalSerializer::class,
+    ResourceLocationSerializer::class
 )
 
 package dev.windmill_broken.cobblemon_store.bo.trade
@@ -9,32 +10,42 @@ import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
+import dev.windmill_broken.cobblemon_store.utils.serializer.ResourceLocationSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonClassDiscriminator
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import java.math.BigDecimal
 import java.util.*
 import kotlin.math.max
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-sealed class Cost {
+@JsonClassDiscriminator("cost_type")
+sealed interface Cost {
 
-    abstract fun enough(player: ServerPlayer): Boolean
+    fun enough(player: ServerPlayer): Boolean
 
-    abstract fun pay(player: ServerPlayer) : Boolean
+    fun pay(player: ServerPlayer) : Boolean
 
-    abstract fun costMsgComponent() : MutableComponent
+    fun costMsgComponent() : MutableComponent
 
-    abstract fun costToolTipComponent() : MutableComponent
+    fun costToolTipComponent() : MutableComponent
 
 }
 
 @Serializable
-data object FreeCost : Cost(){
+@SerialName("FREE_COST")
+data object FreeCost : Cost{
     override fun enough(player: ServerPlayer): Boolean {
         return true
     }
@@ -52,10 +63,12 @@ data object FreeCost : Cost(){
 }
 
 @Serializable
+@SerialName("MONEY_COST")
 class MoneyCost(
     val value: BigDecimal,
-    val type : String = MoneyUtils.primaryCurrency.key().value()
-) : Cost(){
+    @SerialName("currency_type")
+    val currencyType : String = MoneyUtils.primaryCurrency.key().value()
+) : Cost{
 
     constructor(
         value : Int
@@ -71,16 +84,14 @@ class MoneyCost(
 
 
     override fun enough(player: ServerPlayer): Boolean {
-        return run {
-            val wallet = MoneyUtils.getCurrency(player,type)
-            wallet >= value
-        }
+        val wallet = MoneyUtils.getCurrency(player,currencyType)
+        return wallet >= value
     }
 
     override fun pay(player: ServerPlayer): Boolean {
         if (player.isCreative) return true
-        val origin = MoneyUtils.getCurrency(player,type)
-        val current = MoneyUtils.minusMoney(player,value,type)
+        val origin = MoneyUtils.getCurrency(player,currencyType)
+        val current = MoneyUtils.minusMoney(player,value,currencyType)
         return origin > current
     }
 
@@ -97,32 +108,43 @@ class MoneyCost(
  * 不支持nbt检测
  */
 @Serializable
-class ItemCost(
-    val stack: ItemStack,
-) : Cost(){
+@SerialName("SIMPLE_ITEM_COST")
+class SimpleItemCost(
+    val item : ResourceLocation,
+    val count : Int = 1
+) : Cost{
 
-    constructor(
-        item : Item,
-        count : Int = 1
-    ) : this(ItemStack(item,count))
+    val tempStack : ItemStack?
+        get(){
+            val got = BuiltInRegistries.ITEM.getOptional(item)
+            return if (got.isEmpty){
+                null
+            }else{
+                ItemStack(got.get(),count)
+            }
+        }
 
     override fun enough(player: ServerPlayer): Boolean {
-        return player.inventory.items.any {
-            it.item == stack.item
+        val count = player.inventory.items.sumOf {
+            val registerKey = BuiltInRegistries.ITEM.getKey(it.item)
+            if (registerKey == item) it.count else 0
         }
+        return count >= this.count
     }
 
     override fun pay(player: ServerPlayer): Boolean {
         if (player.isCreative) return true
 
         val targets = player.inventory.items.filter {
-            it.item == stack.item
+            val registerKey = BuiltInRegistries.ITEM.getKey(it.item)
+            registerKey == item
         }
-        if (targets.sumOf { it.count } < stack.count) {
+
+        if (targets.sumOf { it.count } < count) {
             player.sendSystemMessage(Component.translatable("msg.cobblemon_store.not_enough_money"))
             return false
         }
-        var countVariable = stack.count
+        var countVariable = count
         var repeatNum = 0
         while(countVariable>= 0){
             val target = targets.firstOrNull{it.count > 0}?:return false.also {
@@ -130,7 +152,7 @@ class ItemCost(
                     Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
                 )
                 CobblemonStore.Companion.LOGGER.error(
-                    "Player ${player.name} attempted to pay $countVariable of ${this.stack.displayName}," +
+                    "Player ${player.name} attempted to pay $countVariable of ${this.item}," +
                             " but only ${targets.sumOf { it.count }} were available in inventory.")
             }
             val shrinkCount = max(countVariable,target.count)
@@ -146,10 +168,10 @@ class ItemCost(
     }
 
     override fun costMsgComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.cost.item", stack.hoverName,stack.count)
+        return Component.translatable("msg.cobblemon_store.cost.item", tempStack?.hoverName?:"",count)
     }
 
     override fun costToolTipComponent(): MutableComponent {
-        return Component.translatable("msg.cobblemon_store.slot.cost.item", stack.hoverName,stack.count)
+        return Component.translatable("msg.cobblemon_store.slot.cost.item", tempStack?.hoverName?:"",count)
     }
 }

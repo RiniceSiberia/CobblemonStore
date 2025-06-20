@@ -12,29 +12,21 @@ import net.neoforged.neoforge.network.PacketDistributor
 
 class StoreSelectionScreen(
     var storeBlockEntity: StoreBlockEntity,
-    title: Component,
+    title: Component
 ) : Screen(title) {
-    private lateinit var storeIdBox: EditBox
-    private lateinit var saveButton: Button
-    override fun init() {
-        super.init()
-
-        // 创建输入框 - 在init中创建而不是render中
-        storeIdBox = EditBox(
+        // 创建输入框
+    val storeIdBox: EditBox = EditBox(
             Minecraft.getInstance().font,
             this.width / 2 - 100,
             this.height / 2 - 40,
             200,
             20,
-            Component.literal("Store ID")
-        )
-
-        storeIdBox.value = storeBlockEntity.storeId ?: "" // 设置当前值
-
-        addRenderableWidget(storeIdBox)
-
-        // 创建保存按钮
-        saveButton = Button.builder(Component.literal("保存")) { button ->
+            Component.translatable("screen.cobblemon_store.choosing.store_id")
+        ).also {
+            it.value = storeBlockEntity.storeId ?: "" // 设置当前值
+        }
+    // 创建保存按钮
+    val saveButton: Button = Button.builder(Component.translatable("screen.cobblemon_store.choosing.save")) { button ->
             if (button.active && storeIdBox.value.isNotEmpty()) {
                 // 发送网络包到服务端而不是直接修改
                 PacketDistributor.sendToServer(
@@ -45,8 +37,21 @@ class StoreSelectionScreen(
                 )
                 this.onClose()
             }
-        }.pos(this.width / 2 - 50, this.height / 2 + 10).size(100, 20).build()
+        }.pos((this.width-SAVE_BUTTON_WIDTH)/2, (this.height +SAVE_BUTTON_HEIGHT)/2)
+        .size(SAVE_BUTTON_WIDTH, SAVE_BUTTON_HEIGHT).build()
 
+    companion object{
+        const val SAVE_BUTTON_WIDTH = 100
+        const val SAVE_BUTTON_HEIGHT = 20
+    }
+
+
+
+
+    override fun init() {
+        super.init()
+
+        addRenderableWidget(storeIdBox)
         addRenderableWidget(saveButton)
     }
 

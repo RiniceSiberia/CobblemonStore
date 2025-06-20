@@ -10,7 +10,17 @@ import kotlin.io.path.exists
 
 object JsonFileUtils {
 
-    val kJsonConfig get() = Json {  }
+    val kJsonConfig get() = Json {
+        prettyPrint = true             // ✅ 启用缩进/美化
+//        prettyPrintIndent = "  "       // ✅ 设置缩进字符串（默认是两个空格）
+        isLenient = true               // 允许宽松语法（如单引号、非引号键）
+//        ignoreUnknownKeys = true      // 忽略未知字段
+//        encodeDefaults = false        // 忽略默认值字段
+//        allowStructuredMapKeys = true // 允许结构化对象作为 map 的 key
+//        useArrayPolymorphism = false  // 多态对象是否用数组表示（true 为旧格式）
+//        classDiscriminator = "type"   // 设置多态类的区分字段名
+//        explicitNulls = false         // 如果为 false，null 不会被序列化
+    }
 
     val gsonConfig get() = Gson()
 

@@ -1,17 +1,24 @@
 package dev.windmill_broken.cobblemon_store.screen
 
 import dev.windmill_broken.cobblemon_store.menu.StoreMenu
+import dev.windmill_broken.cobblemon_store.menu.StoreMenuProvider
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.player.Inventory
 
-class StoreScreen(menu: StoreMenu, playerInventory: Inventory, title: Component) :
-    AbstractContainerScreen<StoreMenu>(menu, playerInventory, title) {
+class StoreScreen(
+    menu: StoreMenu,
+    playerInventory: Inventory,
+    title: Component
+) : AbstractContainerScreen<StoreMenu>(menu, playerInventory, title) {
+
     private val location: ResourceLocation =
         ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png")
     private var containerRows = 0
+
 
     init {
         super.init()
@@ -56,5 +63,9 @@ class StoreScreen(menu: StoreMenu, playerInventory: Inventory, title: Component)
             location, x, y + this.containerRows * 18 + 17, 0, 126,
             this.imageWidth, 96
         )
+    }
+
+    companion object{
+        const val BUTTON_SIZE = 16
     }
 }

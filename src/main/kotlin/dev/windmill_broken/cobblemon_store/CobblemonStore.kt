@@ -10,11 +10,9 @@ import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
-import net.neoforged.fml.config.ModConfig
 import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.server.ServerStartingEvent
-import net.neoforged.neoforge.event.server.ServerStoppingEvent
-import net.neoforged.neoforge.event.tick.ServerTickEvent
+import net.neoforged.neoforge.event.level.LevelEvent
+import net.neoforged.neoforge.event.tick.LevelTickEvent
 import org.slf4j.Logger
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -38,13 +36,13 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
     }
 
     @SubscribeEvent
-    fun onServerStarting(event: ServerStartingEvent){
-        server = event.server
-        registryAccess = server.allLevels.first().registryAccess()
+    fun onGameStarting(event: LevelEvent.Load){
+        registryAccess = event.level.registryAccess()
+        DAOWharf.load()
     }
 
     @SubscribeEvent
-    fun onServerTicket(event : ServerTickEvent.Post){
+    fun onGameTicket(event : LevelTickEvent.Post){
         tickCounter++
 
         if (tickCounter >= TICKS_PER_30_MINUTES) {
@@ -54,7 +52,7 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
     }
 
     @SubscribeEvent
-    fun onServerStopping(event: ServerStoppingEvent){
+    fun onGameStopping(event: LevelEvent.Unload){
         DAOWharf.save()
     }
 

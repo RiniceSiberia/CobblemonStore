@@ -8,83 +8,88 @@ package dev.windmill_broken.cobblemon_store.bo.warehouse
 
 import com.cobblemon.mod.common.pokemon.Pokemon
 import com.cobblemon.mod.common.util.party
-import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.cobblemon_store.bo.trade.SellType
+import com.cobblemon.mod.common.util.removeIf
+import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.utils.MoneyUtils
 import dev.windmill_broken.cobblemon_store.utils.serializer.BigDecimalSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.ItemStackSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.PokemonSerializer
 import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonClassDiscriminator
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.items.ItemHandlerHelper
 import java.math.BigDecimal
-import java.util.*
 
 
 /**
  * 仓库存储的单个项
  */
 
+
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
+@JsonClassDiscriminator("warehouse_item_type")
 sealed class WarehouseItem{
-    abstract val playerUUID: UUID
-    abstract val index : Int
-    val player get() = CobblemonStore.Companion.server.playerList.getPlayer(playerUUID)!!
+
+    abstract val creator : TradeCreator
 
     /**
      * 成交/取回
      */
-    abstract fun retrieve()
+    abstract fun retrieve(superWarehouse : Warehouse)
     /**
      * 删除这个物品,并保存到数据库/json里
      */
-    fun removeIt(){
-        DAOWharf.warehouseLibrary.getOrCreate(playerUUID).apply {
-            this.remove(index)
-            DAOWharf.warehouseLibrary.update(playerUUID,this)
-        }
+    fun removeIt(superWarehouse : Warehouse){
+        superWarehouse.removeIf { it ->
+                it.value == this
+            }
+        DAOWharf.warehouseLibrary.update(superWarehouse.playerUUID,superWarehouse)
     }
 }
 
 @Serializable
+@SerialName("MONEY_WAREHOUSE_ITEM")
 class MoneyWarehouseItem(
-    override val playerUUID: UUID,
-    override val index : Int,
+    override val creator: TradeCreator,
     val value : BigDecimal,
     val type : String
 ): WarehouseItem(){
 
-    override fun retrieve() {
-        MoneyUtils.addMoney(player, value,type)
-        removeIt()
+    override fun retrieve(superWarehouse: Warehouse) {
+        MoneyUtils.addMoney(superWarehouse.player, value,type)
+        removeIt(superWarehouse)
     }
 }
 
 @Serializable
+@SerialName("ITEM_STACK_WAREHOUSE_ITEM")
 class ItemWarehouseItem(
-    override val playerUUID: UUID,
-    override val index : Int,
+    override val creator: TradeCreator,
     val stack : ItemStack
 ): WarehouseItem(){
 
-    override fun retrieve() {
-        ItemHandlerHelper.giveItemToPlayer(player,stack)
+    override fun retrieve(superWarehouse: Warehouse) {
+        ItemHandlerHelper.giveItemToPlayer(superWarehouse.player,stack)
+        removeIt(superWarehouse)
     }
 }
 
 
 @Serializable
+@SerialName("POKEMON_WAREHOUSE_ITEM")
 class PokemonWarehouseItem(
-    override val playerUUID: UUID,
-    override val index : Int,
+    override val creator: TradeCreator,
     val pokemon: Pokemon
 ) : WarehouseItem(){
 
-    override fun retrieve() {
-        player.party().add(pokemon)
-        removeIt()
+    override fun retrieve(superWarehouse: Warehouse) {
+        superWarehouse.player.party().add(pokemon)
+        removeIt(superWarehouse)
     }
 }
