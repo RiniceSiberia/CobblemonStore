@@ -2,8 +2,8 @@ package dev.windmill_broken.cobblemon_store.event
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.Registrations
-import dev.windmill_broken.cobblemon_store.bo.trade.ItemCost
-import dev.windmill_broken.cobblemon_store.bo.trade.ItemPurchasing
+import dev.windmill_broken.cobblemon_store.bo.trade.SimpleItemCost
+import dev.windmill_broken.cobblemon_store.bo.trade.ItemStackPurchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.TradeSerializer
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import net.minecraft.network.chat.Component
@@ -23,12 +23,12 @@ object StoreEvents {
             }
         }
         if (trade != null){
-            if (trade.purchasing is ItemPurchasing){
+            if (trade.purchasing is ItemStackPurchasing){
                 val tooltip = trade.cost.costToolTipComponent()
                 if (tooltip != Component.empty()){
                     event.toolTip.add(tooltip)
                 }
-            }else if (trade.cost is ItemCost){
+            }else if (trade.cost is SimpleItemCost){
                 event.toolTip.add(
                     trade.purchasing.purchasingTooltipComponent()
                 )

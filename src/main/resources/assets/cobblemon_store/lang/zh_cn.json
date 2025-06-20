@@ -20,9 +20,9 @@
 
 
     "item.cobblemon_store.sell_menu.slot.name" : "[%1$s] ",
-    "item.cobblemon_store.sell_menu.slot.reserve.global" : "当前存货:%1$s/%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.total_amount" : "当前存货:%1$s/%2$s",
     "item.cobblemon_store.sell_menu.slot.reserve.poll_limit" : "当前玩家可购买数量:%1$s/%2$s",
-    "item.cobblemon_store.sell_menu.slot.reserve.time_limit" : "该商品将在%1$s下架,距现在还有:%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.expirable" : "该商品将在%1$s下架,距现在还有:%2$s",
 
 
     "item.cobblemon_store.sell_menu.slot.money": "%1$s金币",
@@ -33,7 +33,13 @@
     "item.cobblemon_store.sell_menu.slot.financial": "[金融]",
 
     "menu.cobblemon_store.store" : "商店:%1$s",
+    "menu.cobblemon_store.pre_page": "当前页数:[%1$s] 点击前往上一页",
+    "menu.cobblemon_store.next_page": "当前页数:[%1$s] 点击前往下一页",
+    "menu.cobblemon_store.none_pre_page": "没有上一页了",
+    "menu.cobblemon_store.none_next_page": "没有下一页了",
     "screen.cobblemon_store.choosing.title": "请选择商店",
+    "screen.cobblemon_store.choosing.save": "保存",
+    "screen.cobblemon_store.choosing.store_id": "商店id",
     "block.cobblemon_store.store_block": "宝可梦商店方块",
 
 

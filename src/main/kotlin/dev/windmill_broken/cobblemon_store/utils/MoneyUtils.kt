@@ -31,9 +31,9 @@ object MoneyUtils {
     }
 
     fun String.withCurrencySign(key: String) : String{
-        return getCurrencyType(key)?.symbol()!!
-            .appendSpace()
-            .append(KComponent.text(this)).toString()
+        return (getCurrencyType(key)?.symbol()
+            ?.let{toString() +" "}
+            ?:"")  + this
     }
 
     /**

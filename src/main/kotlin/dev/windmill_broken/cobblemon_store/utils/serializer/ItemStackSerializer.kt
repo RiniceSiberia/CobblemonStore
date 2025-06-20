@@ -6,20 +6,18 @@ import dev.windmill_broken.cobblemon_store.CobblemonStore
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.gsonConfig
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.NbtOps
-import net.minecraft.nbt.Tag
+import kotlinx.serialization.json.JsonEncoder
 import net.minecraft.world.item.ItemStack
 
-object ItemStackSerializer  : KSerializer<ItemStack> {
-    override val descriptor = PrimitiveSerialDescriptor(
+object ItemStackSerializer : KSerializer<ItemStack> {
+    override val descriptor = SerialDescriptor(
         "item_stack_nbt",
-        PrimitiveKind.STRING
+        JsonElement.serializer().descriptor
     )
 
     override fun serialize(encoder: Encoder, value: ItemStack) {
@@ -27,12 +25,14 @@ object ItemStackSerializer  : KSerializer<ItemStack> {
             .resultOrPartial{err ->
                 CobblemonStore.Companion.LOGGER.error("item stack序列化出错:${err}")
             }.orElseThrow()
-        encoder.encodeString(gsonConfig.toJson(nbt))
+        val gsonStr = gsonConfig.toJson(nbt)
+        val ktJson = kJsonConfig.decodeFromString(JsonElement.serializer(),gsonStr)
+        (encoder as JsonEncoder).encodeJsonElement(ktJson)
     }
 
     override fun deserialize(decoder: Decoder): ItemStack {
-        val nbt = decoder.decodeString()
-        val json = JsonParser.parseString(nbt)
+        val nbt = (decoder as JsonDecoder).decodeJsonElement()
+        val json = JsonParser.parseString(kJsonConfig.encodeToString(JsonElement.serializer(),nbt))
         val stack = ItemStack.CODEC.parse(JsonOps.INSTANCE, json)
             .resultOrPartial{err ->
                 CobblemonStore.Companion.LOGGER.error("item stack反序列化出错:${err}")

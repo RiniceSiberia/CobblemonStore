@@ -20,10 +20,6 @@ object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
     WarehouseLibrary,
     DAO.JsonDAO {
 
-    init {
-        load()
-    }
-
     override fun getOrCreate(pid: UUID): Warehouse {
         if (this[pid] == null)
             put(pid, Warehouse(pid))

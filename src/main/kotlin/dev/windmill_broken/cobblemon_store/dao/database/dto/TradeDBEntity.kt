@@ -9,6 +9,7 @@ class TradeDBEntity(id : EntityID<Int>) : Entity<Int>(id) {
     companion object : EntityClass<Int, TradeDBEntity>(TradeDBTable)
 
     var store by StoreDBEntity referencedOn TradeDBTable.storeId
+    var creator by TradeDBTable.creator
     var cost by TradeDBTable.cost
     var purchasing by TradeDBTable.purchasing
     var storeLimits by TradeDBTable.storeLimits

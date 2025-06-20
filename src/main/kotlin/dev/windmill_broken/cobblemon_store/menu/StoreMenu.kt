@@ -2,14 +2,16 @@ package dev.windmill_broken.cobblemon_store.menu
 
 import dev.windmill_broken.cobblemon_store.Registrations
 import dev.windmill_broken.cobblemon_store.bo.store.Store
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
 import net.minecraft.world.Container
 import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
-import net.minecraft.world.inventory.ContainerLevelAccess
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 
 class StoreMenu(
     containerId : Int,
@@ -26,37 +28,90 @@ class StoreMenu(
     val player: Player
         get() = playerInventory.player
 
-    val access : ContainerLevelAccess =
-        ContainerLevelAccess.create(
-            player.level(),
-            player.blockPosition()
-        )
+    val storePageMaxIndex : Int
+        get() = (store.trades.size/(PER_PAGE_ITEM_COUNT))
+
 
     init {
         val i = (ROW - 4) * 18
         tradeContainers.startOpen(player)
+        val trades = store.trades.sortedBy { it.id }
+        var itemIndex = pageIndex * PER_PAGE_ITEM_COUNT
         for (r in 0 until ROW) {
             for (c in 0 until COL){
                 val slotIndex = c + r * COL
                 if (slotIndex in 0 until ROW * COL){
-                    val tradeIndex = pageIndex * ROW * COL + slotIndex
-                    val trade = store.trades.toList().getOrNull(tradeIndex)
-                    if (trade != null) {
-                        tradeContainers.setItem(
-                            tradeIndex,
-                            trade.showedItemStack
-                        )
-                        this.addSlot(
-                            StoreSlot(
-                                tradeContainers,
-                                slotIndex,
-                                8 + c * PER_SLOT_OCCUPY,
-                                18 + r * PER_SLOT_OCCUPY,
-                            ){player ->
-                                trade.trade(player)
+                    val trade = trades.getOrNull(itemIndex)
+                    val stack = when(slotIndex){
+                        0 -> if (pageIndex > 0){
+                            ItemStack(Items.RABBIT_FOOT,pageIndex-1).apply {
+                                val name = Component.translatable("menu.cobblemon_store.pre_page", pageIndex)
+                                this.set(DataComponents.CUSTOM_NAME, name)
                             }
-                        )
+                        }else{
+                            ItemStack(Items.BARRIER).apply {
+                                val name = Component.translatable("menu.cobblemon_store.none_pre_page", pageIndex)
+                                this.set(DataComponents.CUSTOM_NAME, name)
+                            }
+                        }
+                        8 -> if (pageIndex < storePageMaxIndex){
+                            ItemStack(Items.ARROW,pageIndex+1).apply {
+                                val name = Component.translatable("menu.cobblemon_store.next_page", pageIndex)
+                                this.set(DataComponents.CUSTOM_NAME, name)
+                            }
+                        }else{
+                            ItemStack(Items.BARRIER).also {
+                                val name = Component.translatable("menu.cobblemon_store.none_next_page", pageIndex)
+                                it.set(DataComponents.CUSTOM_NAME, name)
+                            }
+                        }
+                        else -> {
+                            trade?.showedItemStack ?: ItemStack.EMPTY
+                        }
                     }
+
+                    tradeContainers.setItem(
+                        slotIndex,
+                        stack
+                    )
+
+                    val onclick :(Player) -> Unit = when(slotIndex){
+                        0 ->{
+                            if (pageIndex > 0){
+                                {player ->
+                                    player.openMenu(
+                                        StoreMenuProvider(store, pageIndex-1)
+                                    )
+                                }
+                            }else{{}}
+                        }
+                        8 ->{
+                            if(pageIndex < storePageMaxIndex){
+                                {player->
+                                    player.openMenu(
+                                        StoreMenuProvider(store, pageIndex+1)
+                                    )
+                                }
+                            }else {{}}}
+                        else -> {
+                            if (trade != null){
+                                itemIndex++
+                                {player ->
+                                    trade.trade(player)
+                                }
+                            } else {{}}
+                        }
+                    }
+
+                    this.addSlot(
+                        StoreSlot(
+                            tradeContainers,
+                            slotIndex,
+                            8 + c * PER_SLOT_OCCUPY,
+                            18 + r * PER_SLOT_OCCUPY,
+                            onclick
+                        )
+                    )
                 }
             }
         }
@@ -117,5 +172,12 @@ class StoreMenu(
 
         val PER_SLOT_OCCUPY : Int
             get() = PER_SLOT_SIZE + 2 * PER_SLOT_MARGIN
+
+
+        val PER_PAGE_ITEM_COUNT : Int
+        get() = (ROW*COL) - PER_PAGE_FUNCTIONAL_BUTTON_COUNT
+
+        val PER_PAGE_FUNCTIONAL_BUTTON_COUNT : Int
+            get() = 2 //上一页和下一页
     }
 }

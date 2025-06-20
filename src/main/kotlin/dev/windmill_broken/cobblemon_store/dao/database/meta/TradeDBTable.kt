@@ -3,6 +3,7 @@ package dev.windmill_broken.cobblemon_store.dao.database.meta
 import dev.windmill_broken.cobblemon_store.bo.trade.Cost
 import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
 import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
+import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.SetSerializer
@@ -17,6 +18,11 @@ object TradeDBTable : IntIdTable("trade","t_id") {
         StoreDBTable,
         onDelete = ReferenceOption.CASCADE,
         onUpdate = ReferenceOption.CASCADE,
+    )
+    val creator = jsonb(
+        name = "creator",
+        jsonConfig = kJsonConfig,
+        kSerializer = TradeCreator.serializer()
     )
     val cost = jsonb(
         name = "cost",

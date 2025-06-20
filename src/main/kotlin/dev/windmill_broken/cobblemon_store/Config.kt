@@ -45,7 +45,7 @@ object Config {
 //        container.registerConfig(ModConfig.Type.SERVER, SPEC,"${MOD_FOLDER_ID}/money_settings_server.cfg")
         modContainer.registerConfig(ModConfig.Type.SERVER, spec)
         with(modEventBus){
-            addListener { event : ModConfigEvent ->
+            addListener { event : ModConfigEvent.Loading ->
                 DB_PATH = dbPath.get()
                 DB_DRIVER = dbDriver.get()
                 DB_USER = dbUser.get()

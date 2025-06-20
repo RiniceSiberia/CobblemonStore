@@ -38,4 +38,13 @@ object DAOWharf {
             }
         }
     }
+
+    fun load(){
+        val list = listOf(warehouseLibrary, storeLibrary, tradeLibrary)
+        list.forEach {
+            if (it is DAO.JsonDAO){
+                it.load()
+            }
+        }
+    }
 }

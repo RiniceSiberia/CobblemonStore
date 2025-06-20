@@ -4,9 +4,12 @@
 package dev.windmill_broken.cobblemon_store.bo.warehouse
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
+import dev.windmill_broken.cobblemon_store.bo.trade.PlayerTradeCreator
+import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
 import dev.windmill_broken.cobblemon_store.utils.serializer.UUIDSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.builtins.MapSerializer
@@ -21,8 +24,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 @Serializable(with = WarehouseSerializer::class)
+@SerialName("WAREHOUSE")
 class Warehouse(
-    val playerUUID: UUID
+    @SerialName("player_uuid")
+    val playerUUID: UUID,
+    @SerialName("automatic_acquisition")
+    var automaticAcquisition : Boolean = true,
 ) : ConcurrentHashMap<Int, WarehouseItem>(){
     val player get() = CobblemonStore.Companion.server.playerList.getPlayer(playerUUID)!!
     val nextEmptyIndex
