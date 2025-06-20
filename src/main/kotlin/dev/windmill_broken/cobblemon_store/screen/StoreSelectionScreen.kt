@@ -15,7 +15,17 @@ class StoreSelectionScreen(
     title: Component
 ) : Screen(title) {
         // 创建输入框
-    val storeIdBox: EditBox = EditBox(
+    companion object{
+        const val SAVE_BUTTON_WIDTH = 100
+        const val SAVE_BUTTON_HEIGHT = 20
+    }
+
+
+
+
+    override fun init() {
+        super.init()
+        val storeIdBox: EditBox = EditBox(
             Minecraft.getInstance().font,
             this.width / 2 - 100,
             this.height / 2 - 40,
@@ -25,8 +35,8 @@ class StoreSelectionScreen(
         ).also {
             it.value = storeBlockEntity.storeId ?: "" // 设置当前值
         }
-    // 创建保存按钮
-    val saveButton: Button = Button.builder(Component.translatable("screen.cobblemon_store.choosing.save")) { button ->
+        // 创建保存按钮
+        val saveButton: Button = Button.builder(Component.translatable("screen.cobblemon_store.choosing.save")) { button ->
             if (button.active && storeIdBox.value.isNotEmpty()) {
                 // 发送网络包到服务端而不是直接修改
                 PacketDistributor.sendToServer(
@@ -38,19 +48,7 @@ class StoreSelectionScreen(
                 this.onClose()
             }
         }.pos((this.width-SAVE_BUTTON_WIDTH)/2, (this.height +SAVE_BUTTON_HEIGHT)/2)
-        .size(SAVE_BUTTON_WIDTH, SAVE_BUTTON_HEIGHT).build()
-
-    companion object{
-        const val SAVE_BUTTON_WIDTH = 100
-        const val SAVE_BUTTON_HEIGHT = 20
-    }
-
-
-
-
-    override fun init() {
-        super.init()
-
+            .size(SAVE_BUTTON_WIDTH, SAVE_BUTTON_HEIGHT).build()
         addRenderableWidget(storeIdBox)
         addRenderableWidget(saveButton)
     }

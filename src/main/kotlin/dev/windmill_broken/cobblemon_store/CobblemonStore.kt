@@ -12,6 +12,7 @@ import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.level.LevelEvent
+import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.tick.LevelTickEvent
 import org.slf4j.Logger
 
@@ -36,8 +37,9 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
     }
 
     @SubscribeEvent
-    fun onGameStarting(event: LevelEvent.Load){
-        registryAccess = event.level.registryAccess()
+    fun onGameStarting(event: ServerStartedEvent){
+        server = event.server
+        registryAccess = server.registryAccess()
         DAOWharf.load()
     }
 

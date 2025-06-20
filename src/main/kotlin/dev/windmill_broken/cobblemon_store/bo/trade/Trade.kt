@@ -113,7 +113,7 @@ class Trade(
             if (warehouse.automaticAcquisition
                 && ((purchasingItem.creator is ServerTradeCreator)
                         ||(purchasingItem.creator is PlayerTradeCreator
-                        && (purchasingItem.creator as PlayerTradeCreator).playerId == player))){
+                        && (purchasingItem.creator as PlayerTradeCreator).playerId == player.uuid))){
                 purchasingItem.retrieve(warehouse)
             }else{
                 warehouse.put(warehouse.nextEmptyIndex,purchasingItem)
