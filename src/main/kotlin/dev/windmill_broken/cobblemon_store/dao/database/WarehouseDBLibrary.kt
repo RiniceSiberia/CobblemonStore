@@ -29,7 +29,6 @@ object WarehouseDBLibrary : WarehouseLibrary, DAO.DBDAO{
     }
 
     override fun getOrCreate(pid: UUID): Warehouse {
-        register()
         DatabaseUtils.getConnection().use { conn ->
             conn.prepareStatement("SELECT $tableName FROM $tableName WHERE p_id = ?").use { stmt ->
                 stmt.setString(1, pid.toString())
@@ -49,7 +48,6 @@ object WarehouseDBLibrary : WarehouseLibrary, DAO.DBDAO{
     }
 
     override fun update(pid: UUID, warehouse: Warehouse) {
-        register()
         DatabaseUtils.getConnection().use {
             it.prepareStatement(
                 """

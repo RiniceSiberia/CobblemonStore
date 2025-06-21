@@ -1,7 +1,7 @@
 package dev.windmill_broken.cobblemon_store.screen
 
-import dev.windmill_broken.cobblemon_store.net.StoreConfigPacket
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity
+import dev.windmill_broken.cobblemon_store.net.StoreConfigPacket
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Button

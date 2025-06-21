@@ -24,8 +24,24 @@ object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
         }
     }
 
+    override fun list(): List<Store> {
+        val stores = buildList {
+            DatabaseUtils.getConnection().use { conn ->
+                conn.prepareStatement("SELECT s_id, name FROM store").use { stmt ->
+                    stmt.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            val id = rs.getString("s_id")
+                            val name = rs.getString("name")
+                            add(Store(id,name))
+                        }
+                    }
+                }
+            }
+        }
+        return stores
+    }
+
     override fun get(sid: String): Store? {
-        register()
         return DatabaseUtils.getConnection().use { conn ->
             val ps = conn.prepareStatement("SELECT * FROM $tableName WHERE s_id = ?")
             ps.setString(1, sid)
@@ -42,7 +58,6 @@ object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
         id: String,
         name: String
     ) {
-        register()
         DatabaseUtils.getConnection().use { conn ->
             val ps = conn.prepareStatement(
                 """
@@ -59,7 +74,6 @@ object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
 
 
     override fun removeById(id: String) {
-        register()
         DatabaseUtils.getConnection().use { conn ->
             val ps = conn.prepareStatement("DELETE FROM $tableName WHERE s_id = ?")
             ps.setString(1, id)

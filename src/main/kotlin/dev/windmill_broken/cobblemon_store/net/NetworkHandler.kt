@@ -1,6 +1,5 @@
 package dev.windmill_broken.cobblemon_store.net
 
-import dev.windmill_broken.cobblemon_store.net.StoreConfigPacket
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity
 import net.minecraft.server.level.ServerPlayer
 import net.neoforged.neoforge.network.handling.IPayloadContext

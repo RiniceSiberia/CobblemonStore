@@ -37,7 +37,6 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
 
 
     override fun get(tradeId: Int): Trade? {
-        register()
         return DatabaseUtils.getConnection().use { conn ->
             val ps = conn.prepareStatement("SELECT * FROM $tableName WHERE t_id = ?")
             ps.setInt(1, tradeId)
@@ -77,7 +76,6 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
     ): Int {
-        register()
         val jsonCreator = kJsonConfig.encodeToString(TradeCreator.serializer(),creator)
         val jsonCost = kJsonConfig.encodeToString(Cost.serializer(),cost)
         val jsonPurchasing = kJsonConfig.encodeToString(Purchasing.serializer(),purchasing)
@@ -104,7 +102,6 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
     }
 
     override fun getByStoreId(storeId: String): List<Trade> {
-        register()
         val trades = mutableListOf<Trade>()
         DatabaseUtils.getConnection().use { conn ->
             conn.prepareStatement("SELECT * FROM $tableName WHERE store_id = ?").use { stmt ->
@@ -135,6 +132,61 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
         return trades
     }
 
+    override fun export(): List<Trade> {
+        val trades = mutableListOf<Trade>()
+        DatabaseUtils.getConnection().use { conn ->
+            conn.prepareStatement("SELECT * FROM $tableName").use { stmt ->
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val tId = rs.getInt("t_id")
+                        val storeId = rs.getString("store_id")
+                        val creator = kJsonConfig.decodeFromString(TradeCreator.serializer(),rs.getString("creator"))
+                        val autoRemove = rs.getBoolean("auto_remove")
+                        val cost = kJsonConfig.decodeFromString(Cost.serializer(),rs.getString("cost"))
+                        val purchasing = kJsonConfig.decodeFromString(Purchasing.serializer(),rs.getString("purchasing"))
+                        val storeLimits = kJsonConfig.decodeFromString(SetSerializer(StoreLimit.serializer()),rs.getString("store_limits"))
+                        trades.add(
+                            Trade(
+                                id = tId,
+                                storeId = storeId,
+                                creator = creator,
+                                autoRemove = autoRemove,
+                                cost = cost,
+                                purchasing = purchasing,
+                                storeLimits = storeLimits
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        return trades
+    }
+
+    override fun import(trades: Collection<Trade>) {
+        DatabaseUtils.getConnection().use { conn ->
+            trades.forEach { trade ->
+                val jsonCreator = kJsonConfig.encodeToString(TradeCreator.serializer(),trade.creator)
+                val jsonCost = kJsonConfig.encodeToString(Cost.serializer(),trade.cost)
+                val jsonPurchasing = kJsonConfig.encodeToString(Purchasing.serializer(),trade.purchasing)
+                val jsonLimits = kJsonConfig.encodeToString(SetSerializer(StoreLimit.serializer()),trade.storeLimits.toSet())
+
+                conn.prepareStatement("""
+                    INSERT INTO $tableName (store_id, creator, auto_remove, cost, purchasing, store_limits)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """).use { stmt ->
+                    stmt.setString(1, trade.storeId)
+                    stmt.setString(2, jsonCreator)
+                    stmt.setBoolean(3, trade.autoRemove)
+                    stmt.setString(4, jsonCost)
+                    stmt.setString(5, jsonPurchasing)
+                    stmt.setString(6, jsonLimits)
+                    stmt.executeUpdate()
+                }
+            }
+        }
+    }
+
     override fun update(
         id: Int,
         storeId: String,
@@ -144,7 +196,6 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
     ) {
-        register()
         val jsonCreator = kJsonConfig.encodeToString(TradeCreator.serializer(),creator)
         val jsonCost = kJsonConfig.encodeToString(Cost.serializer(),cost)
         val jsonPurchasing = kJsonConfig.encodeToString(Purchasing.serializer(),purchasing)
@@ -181,7 +232,6 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
     }
 
     override fun removeById(id: Int) {
-        register()
         DatabaseUtils.getConnection().use {
             val stmt = it.prepareStatement("DELETE FROM $tableName WHERE t_id = ?")
             stmt.setInt(1, id)

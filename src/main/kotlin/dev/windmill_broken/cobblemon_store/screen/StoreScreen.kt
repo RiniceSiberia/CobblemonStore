@@ -1,9 +1,7 @@
 package dev.windmill_broken.cobblemon_store.screen
 
 import dev.windmill_broken.cobblemon_store.menu.StoreMenu
-import dev.windmill_broken.cobblemon_store.menu.StoreMenuProvider
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation

@@ -3,18 +3,17 @@ package dev.windmill_broken.cobblemon_store
 import com.mojang.logging.LogUtils
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.event.StoreEvents
-import dev.windmill_broken.cobblemon_store.event.TestEvent
 import net.minecraft.core.RegistryAccess
 import net.minecraft.server.MinecraftServer
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.api.distmarker.OnlyIn
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.level.LevelEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
-import net.neoforged.neoforge.event.tick.LevelTickEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
 import org.slf4j.Logger
 
@@ -34,30 +33,35 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
         }
         with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)
-            addListener(TestEvent::onTestEvent)
         }
     }
 
     @SubscribeEvent
     fun onGameStarting(event: ServerStartedEvent){
-        server = event.server
-        registryAccess = server.registryAccess()
-        DAOWharf.load()
+        if (event.server.isDedicatedServer){
+            server = event.server
+            registryAccess = server.registryAccess()
+            DAOWharf.load()
+        }
     }
 
     @SubscribeEvent
     fun onGameTicket(event : ServerTickEvent.Post){
-        tickCounter++
+        if (event.server.isDedicatedServer){
+            tickCounter++
 
-        if (tickCounter >= TICKS_PER_30_MINUTES) {
-            tickCounter = 0
-            DAOWharf.save()
+            if (tickCounter >= TICKS_PER_30_MINUTES) {
+               tickCounter = 0
+                DAOWharf.save()
+            }
         }
     }
 
     @SubscribeEvent
     fun onGameStopping(event: ServerStoppingEvent){
-        DAOWharf.save()
+        if (event.server.isDedicatedServer){
+            DAOWharf.save()
+        }
     }
 
 

@@ -17,6 +17,10 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
 
     private fun readResolve(): Any = StoresJsonLibrary
 
+    override fun list(): List<Store> {
+        return this.values.toList()
+    }
+
     override fun get(sid: String): Store? = super.get(sid)
 
     override fun createOrUpdate(

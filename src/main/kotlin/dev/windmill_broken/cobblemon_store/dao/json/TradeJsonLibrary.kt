@@ -1,11 +1,7 @@
 package dev.windmill_broken.cobblemon_store.dao.json
 
 import dev.windmill_broken.cobblemon_store.CobblemonStore
-import dev.windmill_broken.cobblemon_store.bo.trade.Cost
-import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
-import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.cobblemon_store.bo.trade.Trade
-import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
+import dev.windmill_broken.cobblemon_store.bo.trade.*
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
 import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
@@ -58,6 +54,14 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
         return this.values.filter {
             it.storeId == storeId
         }
+    }
+
+    override fun export(): List<Trade> {
+        return this.values.toList()
+    }
+
+    override fun import(trades: Collection<Trade>) {
+        this.putAll(trades.associateBy { it.id })
     }
 
     override fun update(
