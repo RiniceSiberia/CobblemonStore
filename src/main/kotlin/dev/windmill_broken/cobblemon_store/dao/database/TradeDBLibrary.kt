@@ -1,5 +1,6 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
+import dev.windmill_broken.cobblemon_store.CobblemonStore.Companion.LOGGER
 import dev.windmill_broken.cobblemon_store.bo.trade.*
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
@@ -108,23 +109,28 @@ object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
                 stmt.setString(1, storeId)
                 stmt.executeQuery().use { rs ->
                     while (rs.next()) {
-                        val tId = rs.getInt("t_id")
-                        val creator = kJsonConfig.decodeFromString(TradeCreator.serializer(),rs.getString("creator"))
-                        val autoRemove = rs.getBoolean("auto_remove")
-                        val cost = kJsonConfig.decodeFromString(Cost.serializer(),rs.getString("cost"))
-                        val purchasing = kJsonConfig.decodeFromString(Purchasing.serializer(),rs.getString("purchasing"))
-                        val storeLimits = kJsonConfig.decodeFromString(SetSerializer(StoreLimit.serializer()),rs.getString("store_limits"))
-                        trades.add(
-                            Trade(
-                                id = tId,
-                                storeId = storeId,
-                                creator = creator,
-                                autoRemove = autoRemove,
-                                cost = cost,
-                                purchasing = purchasing,
-                                storeLimits = storeLimits
+                        try {
+                            val tId = rs.getInt("t_id")
+                            val creator = kJsonConfig.decodeFromString(TradeCreator.serializer(),rs.getString("creator"))
+                            val autoRemove = rs.getBoolean("auto_remove")
+                            val cost = kJsonConfig.decodeFromString(Cost.serializer(),rs.getString("cost"))
+                            val purchasing = kJsonConfig.decodeFromString(Purchasing.serializer(),rs.getString("purchasing"))
+                            val storeLimits = kJsonConfig.decodeFromString(SetSerializer(StoreLimit.serializer()),rs.getString("store_limits"))
+                            trades.add(
+                                Trade(
+                                    id = tId,
+                                    storeId = storeId,
+                                    creator = creator,
+                                    autoRemove = autoRemove,
+                                    cost = cost,
+                                    purchasing = purchasing,
+                                    storeLimits = storeLimits
+                                )
                             )
-                        )
+                        }catch (e : Throwable){
+                            LOGGER.error("Error while getting trades", e)
+                            continue
+                        }
                     }
                 }
             }

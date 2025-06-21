@@ -7,6 +7,7 @@ import net.minecraft.commands.Commands
 
 object CobblemonStoreCommands {
     fun register(dispatcher: CommandDispatcher<CommandSourceStack>, registry: CommandBuildContext, selection: Commands.CommandSelection) {
-
+        StoreCommands.register(dispatcher)
+        TradeCommands.register(dispatcher)
     }
 }

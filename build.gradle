@@ -260,6 +260,10 @@ dependencies {
     implementation "net.kyori:adventure-api:4.22.0"
 
     implementation(files("lib/Impactor-Neoforge-5.3.4+1.21.1.jar"))
+    implementation "curse.maven:curios-309927:6529130"
+    implementation "curse.maven:simpletms-tms-and-trs-for-cobblemon-959184:6402412"
+    implementation "curse.maven:cobblemon-mega-showdown-1189523:6677425"
+
 
 
     implementation "curse.maven:jei-238222:6577302"

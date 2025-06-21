@@ -1,6 +1,7 @@
 package dev.windmill_broken.cobblemon_store
 
 import com.mojang.logging.LogUtils
+import dev.windmill_broken.cobblemon_store.commands.CobblemonStoreCommands
 import dev.windmill_broken.cobblemon_store.dao.DAOWharf
 import dev.windmill_broken.cobblemon_store.event.StoreEvents
 import net.minecraft.core.RegistryAccess
@@ -12,6 +13,7 @@ import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
@@ -34,6 +36,12 @@ class CobblemonStore(modEventBus: IEventBus, modContainer: ModContainer) {
         with(NeoForge.EVENT_BUS){
             addListener(StoreEvents::onTooltipsEvent)
         }
+    }
+
+
+    @SubscribeEvent
+    fun registerCommands(e: RegisterCommandsEvent) {
+        CobblemonStoreCommands.register(e.dispatcher, e.buildContext, e.commandSelection)
     }
 
     @SubscribeEvent

@@ -68,18 +68,20 @@ class StoreBlock(
         hitResult: BlockHitResult
     ): InteractionResult {
         if (!level.isClientSide()) {
-            val be = level.getBlockEntity(pos)
-            if (be != null && be is StoreBlockEntity) {
-                val store = be.store
-                if (store != null) {
-                    player.openMenu(
-                        StoreMenuProvider(store, 0)
-                    )
-                    { buf ->
-                        buf.writeInt(0)
-                        buf.writeString(store.id)
+            if(!player.isCreative || !player.isCrouching){
+                val be = level.getBlockEntity(pos)
+                if (be != null && be is StoreBlockEntity) {
+                    val store = be.store
+                    if (store != null) {
+                        player.openMenu(
+                            StoreMenuProvider(store, 0)
+                        )
+                        { buf ->
+                            buf.writeInt(0)
+                            buf.writeString(store.id)
+                        }
+                        return InteractionResult.CONSUME
                     }
-                    return InteractionResult.CONSUME
                 }
             }
         } else {
