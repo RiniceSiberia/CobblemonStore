@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "" : {"model":"cobblemon_store:block/store_block"}
+  }
+}

@@ -44,6 +44,8 @@ object DAOWharf {
         list.forEach {
             if (it is DAO.JsonDAO){
                 it.load()
+            }else if(it is DAO.DBDAO){
+                it.register()
             }
         }
     }

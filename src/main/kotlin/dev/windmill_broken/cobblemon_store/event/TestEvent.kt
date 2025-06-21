@@ -16,25 +16,26 @@ object TestEvent {
         val p = event.entity
         if (p is ServerPlayer){
             if(DAOWharf.storeLibrary["test_store"] == null){
-                DAOWharf.storeLibrary.create(
+                DAOWharf.storeLibrary.createOrUpdate(
                     id = "test_store",
-                    name = "test store",
-                    description = "test store",
+                    name = "test store"
                 )
             }
-            DAOWharf.tradeLibrary.createTrade(
-                "test_store",
-                ServerTradeCreator,
-                MoneyCost(5),
-                ItemStackPurchasing(Items.GOLD_NUGGET),
-                setOf()
+            DAOWharf.tradeLibrary.create(
+                storeId = "test_store",
+                creator = ServerTradeCreator,
+                autoRemove = false,
+                cost = MoneyCost(5),
+                purchasing = ItemStackPurchasing(Items.GOLD_NUGGET),
+                storeLimits = setOf()
             )
-            DAOWharf.tradeLibrary.createTrade(
-                "test_store",
-                ServerTradeCreator,
-                SimpleItemCost(BuiltInRegistries.ITEM.getKey(Items.GOLD_INGOT)),
-                MoneyPurchasing(45),
-                setOf()
+            DAOWharf.tradeLibrary.create(
+                storeId = "test_store",
+                creator = ServerTradeCreator,
+                autoRemove = false,
+                cost = SimpleItemCost(BuiltInRegistries.ITEM.getKey(Items.GOLD_INGOT)),
+                purchasing = MoneyPurchasing(45),
+                storeLimits = setOf()
             )
         }
     }

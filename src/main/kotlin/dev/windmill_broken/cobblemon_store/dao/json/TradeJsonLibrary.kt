@@ -24,22 +24,25 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
         return super.get(tradeId)
     }
 
-    override fun createTrade(
+    override fun create(
         storeId: String,
         creator: TradeCreator,
+        autoRemove: Boolean,
         cost: Cost,
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
-    ) {
+    ): Int {
         val t = Trade(
             nextEmptyIndex,
             storeId,
             creator,
+            autoRemove,
             cost,
             purchasing,
             storeLimits
         )
         this[t.id] = t
+        return 1
     }
 
     val nextEmptyIndex : Int
@@ -57,12 +60,36 @@ object TradeJsonLibrary: ConcurrentHashMap<Int, Trade>(), TradeLibrary, DAO.Json
         }
     }
 
-    override fun update(trade: Trade) {
+    override fun update(
+        id: Int,
+        storeId: String,
+        creator: TradeCreator,
+        autoRemove: Boolean,
+        cost: Cost,
+        purchasing: Purchasing,
+        storeLimits: Set<StoreLimit>
+    ) {
+        return update(
+            Trade(
+                id,
+                storeId,
+                creator,
+                autoRemove,
+                cost,
+                purchasing,
+                storeLimits
+            )
+        )
+    }
+
+    override fun update(
+        trade: Trade
+    ) {
         this[trade.id] = trade
     }
 
     override fun removeById(id: Int) {
-        this.remove(id)
+        super.remove(id)
     }
 
     override fun load() {

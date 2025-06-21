@@ -1,66 +1,75 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
 import dev.windmill_broken.cobblemon_store.bo.store.Store
-import dev.windmill_broken.cobblemon_store.bo.trade.Cost
-import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
-import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.cobblemon_store.bo.trade.Trade
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.StoresLibrary
-import dev.windmill_broken.cobblemon_store.dao.database.dto.StoreDBEntity
-import dev.windmill_broken.cobblemon_store.dao.database.meta.StoreDBTable
-import dev.windmill_broken.cobblemon_store.dao.database.meta.TradeDBTable
 import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
-import dev.windmill_broken.cobblemon_store.utils.MigrationUtils
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 
-@Suppress("SEALED_INHERITOR_IN_DIFFERENT_PACKAGE")
 object StoresDBLibrary : StoresLibrary, DAO.DBDAO{
+
+    override val tableName: String
+        get() = "cobblemon_store_stores"
+
     init {
-        if (TradeDBLibrary.valid && valid){
-            transaction(db = DatabaseUtils.DATABASE) {
-                MigrationUtils.statementsRequiredForDatabaseMigration(TradeDBTable)
-            }
+        register()
+    }
+
+    override fun createTable(){
+        DatabaseUtils.getConnection().use {
+            it.prepareStatement("""
+                      CREATE TABLE IF NOT EXISTS $tableName (
+                          s_id VARCHAR(255) PRIMARY KEY,
+                          name TEXT
+                      )""".trimIndent()).execute()
         }
     }
+
     override fun get(sid: String): Store? {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            StoreDBEntity.findById(sid)?.let {
-                Store(
-                    id = it.id.value,
-                    name = it.name,
-                    description = it.description
-                )
+        register()
+        return DatabaseUtils.getConnection().use { conn ->
+            val ps = conn.prepareStatement("SELECT * FROM $tableName WHERE s_id = ?")
+            ps.setString(1, sid)
+            val rs = ps.executeQuery()
+            if (rs.next()) {
+                Store(rs.getString("s_id"), rs.getString("name"))
+            } else {
+                null
             }
         }
     }
 
-    override fun create(
+    override fun createOrUpdate(
         id: String,
-        name: String,
-        description: String?
+        name: String
     ) {
-        transaction(db = DatabaseUtils.DATABASE) {
-            StoreDBEntity.new(id) {
-                this.name = name
-                this.description = description
-            }
+        register()
+        DatabaseUtils.getConnection().use { conn ->
+            val ps = conn.prepareStatement(
+                """
+                INSERT INTO $tableName (s_id, name)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE
+                    name = VALUES(name)"""
+            )
+            ps.setString(1, id)
+            ps.setString(2, name)
+            ps.executeUpdate()
         }
     }
 
-    override fun update(id: String, store: Store) {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            StoreDBTable.update({ StoreDBTable.id eq id }) {
-                it[name] = store.name
-                it[description] = store.description
-            }
-        }
-    }
 
     override fun removeById(id: String) {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            StoreDBEntity.findById(id)?.delete()
+        register()
+        DatabaseUtils.getConnection().use { conn ->
+            val ps = conn.prepareStatement("DELETE FROM $tableName WHERE s_id = ?")
+            ps.setString(1, id)
+            ps.executeUpdate()
+        }
+    }
+
+    override fun register() {
+        if (valid && !exists()){
+            createTable()
         }
     }
 

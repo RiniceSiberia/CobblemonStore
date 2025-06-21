@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class Store(
     val id : String,
-    var name : String,
-    val description: String? = null,
+    var name : String
 ){
     val trades : Collection<Trade>
         get() = DAOWharf.tradeLibrary.getByStoreId(id)

@@ -98,6 +98,7 @@ class StoreMenu(
                                 itemIndex++
                                 {player ->
                                     trade.trade(player)
+                                    playerInventory.setChanged()
                                 }
                             } else {{}}
                         }
@@ -116,27 +117,23 @@ class StoreMenu(
             }
         }
 
-        for (r in 0 until 3){
-            for (c in 0 until 9){
-                this.addSlot(
-                    Slot(
-                        playerInventory,
-                        c + r * 9,
-                        8 + c * PER_SLOT_OCCUPY,
-                        103 + r * PER_SLOT_OCCUPY + i
-                    )
+        for (luggageColumn in 0..2) {
+            for (luggageRow in 0..8) {
+                this.addSlot(Slot(
+                    playerInventory,
+                    luggageRow + luggageColumn * 9 + 9,
+                    8 + luggageRow * PER_SLOT_OCCUPY,
+                    103 + luggageColumn * PER_SLOT_OCCUPY + i)
                 )
             }
         }
 
-        for(r in 0 until 9){
-            this.addSlot(
-                Slot(
-                    playerInventory,
-                    r,
-                    8 + r * PER_SLOT_OCCUPY,
-                    161 + i
-                )
+        for (toolbarColumn in 0..8) {
+            this.addSlot(Slot(
+                playerInventory,
+                toolbarColumn,
+                8 + toolbarColumn * PER_SLOT_OCCUPY,
+                161 + i)
             )
         }
     }

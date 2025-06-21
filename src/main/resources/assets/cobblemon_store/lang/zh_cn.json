@@ -22,7 +22,8 @@
     "item.cobblemon_store.sell_menu.slot.name" : "[%1$s] ",
     "item.cobblemon_store.sell_menu.slot.reserve.total_amount" : "当前存货:%1$s/%2$s",
     "item.cobblemon_store.sell_menu.slot.reserve.poll_limit" : "当前玩家可购买数量:%1$s/%2$s",
-    "item.cobblemon_store.sell_menu.slot.reserve.expirable" : "该商品将在%1$s下架,距现在还有:%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.expire" : "该商品将在%1$s下架,距现在还有:%2$s",
+    "item.cobblemon_store.sell_menu.slot.reserve.expired" : "该商品已在%1$s下架！",
 
 
     "item.cobblemon_store.sell_menu.slot.money": "%1$s金币",

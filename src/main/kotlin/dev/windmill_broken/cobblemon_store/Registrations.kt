@@ -8,9 +8,12 @@ import dev.windmill_broken.cobblemon_store.block.StoreBlock
 import dev.windmill_broken.cobblemon_store.block.StoreBlockEntity
 import dev.windmill_broken.cobblemon_store.menu.StoreMenuSupplier
 import dev.windmill_broken.cobblemon_store.screen.StoreScreen
+import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponentType
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.flag.FeatureFlags
 import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.BlockItem
@@ -34,7 +37,6 @@ object Registrations {
 
     object StoreItems {
         val ITEMS = DeferredRegister.createItems(MOD_ID)
-
 
         fun register(eventBus: IEventBus) {
             ITEMS.register(eventBus)

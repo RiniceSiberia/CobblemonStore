@@ -15,7 +15,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 
-@Suppress("SEALED_INHERITOR_IN_DIFFERENT_PACKAGE")
 object WarehouseJsonLibrary : ConcurrentHashMap<UUID, Warehouse>(),
     WarehouseLibrary,
     DAO.JsonDAO {

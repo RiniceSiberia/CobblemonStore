@@ -23,8 +23,9 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStack
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.max
+import kotlin.math.min
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -145,22 +146,24 @@ class SimpleItemCost(
         }
         var countVariable = count
         var repeatNum = 0
-        while (countVariable >= 0) {
+        while (countVariable > 0) {
             val target = targets.firstOrNull { it.count > 0 } ?: return false.also {
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                 player.sendSystemMessage(
-                    Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
+                    Component.translatable("msg.cobblemon_store.err", formatter.format(Calendar.getInstance().time))
                 )
                 CobblemonStore.Companion.LOGGER.error(
                     "Player ${player.name} attempted to pay $countVariable of ${this.item}," +
                             " but only ${targets.sumOf { it.count }} were available in inventory.")
             }
-            val shrinkCount = max(countVariable, target.count)
+            val shrinkCount = min(countVariable, target.count)
             target.shrink(shrinkCount)
             countVariable -= shrinkCount
             repeatNum++
             if (repeatNum >= 1000) {
-                Component.translatable("msg.cobblemon_store.err", Calendar.getInstance())
-                CobblemonStore.Companion.LOGGER.error("Aborting loop: exceeded maximum allowed iterations (100000). Possible infinite loop.")
+                val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                Component.translatable("msg.cobblemon_store.err", formatter.format(Calendar.getInstance().time))
+                CobblemonStore.Companion.LOGGER.error("Aborting loop: exceeded maximum allowed iterations (1000). Possible infinite loop.")
             }
         }
         return true

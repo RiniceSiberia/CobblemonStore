@@ -27,7 +27,7 @@ object MoneyUtils {
         return currencyTypes[key]
     }
 
-    fun String.withCurrencySign(key: String): String {
+    fun getCurrencySignal(key: String): String {
         return (getCurrencyType(key)?.symbol()
             ?.let { toString() + " " }
             ?: "") + this

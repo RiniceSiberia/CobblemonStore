@@ -7,13 +7,11 @@ import java.util.*
  * 玩家仓库
  */
 
-sealed interface WarehouseLibrary : DAO{
+interface WarehouseLibrary : DAO{
 
     fun getOrCreate(pid : UUID) : Warehouse
 
     fun update(pid : UUID, warehouse : Warehouse)
-
-    fun register(){}
 }
 
 

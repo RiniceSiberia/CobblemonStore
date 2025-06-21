@@ -1,99 +1,197 @@
 package dev.windmill_broken.cobblemon_store.dao.database
 
-import dev.windmill_broken.cobblemon_store.bo.trade.Cost
-import dev.windmill_broken.cobblemon_store.bo.trade.Purchasing
-import dev.windmill_broken.cobblemon_store.bo.trade.StoreLimit
-import dev.windmill_broken.cobblemon_store.bo.trade.Trade
-import dev.windmill_broken.cobblemon_store.bo.trade.TradeCreator
+import dev.windmill_broken.cobblemon_store.bo.trade.*
 import dev.windmill_broken.cobblemon_store.dao.DAO
 import dev.windmill_broken.cobblemon_store.dao.TradeLibrary
-import dev.windmill_broken.cobblemon_store.dao.database.dto.StoreDBEntity
-import dev.windmill_broken.cobblemon_store.dao.database.dto.TradeDBEntity
-import dev.windmill_broken.cobblemon_store.dao.database.meta.TradeDBTable
 import dev.windmill_broken.cobblemon_store.utils.DatabaseUtils
-import dev.windmill_broken.cobblemon_store.utils.MigrationUtils
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import dev.windmill_broken.cobblemon_store.utils.JsonFileUtils.kJsonConfig
+import kotlinx.serialization.builtins.SetSerializer
 
-@Suppress("SEALED_INHERITOR_IN_DIFFERENT_PACKAGE")
 object TradeDBLibrary : TradeLibrary, DAO.DBDAO {
 
-
     init {
-        if (valid && StoresDBLibrary.valid){
-            transaction(db = DatabaseUtils.DATABASE) {
-                MigrationUtils.statementsRequiredForDatabaseMigration(TradeDBTable)
-            }
+        register()
+    }
+
+    override val tableName: String
+        get() = "cobblemon_store_trades"
+
+    override fun createTable(){
+
+        DatabaseUtils.getConnection().use {
+            it.prepareStatement("""
+                CREATE TABLE $tableName (
+                    t_id INT AUTO_INCREMENT PRIMARY KEY,
+                    store_id VARCHAR(255) NOT NULL,
+                    creator JSON NOT NULL,
+                    auto_remove BOOLEAN NOT NULL,
+                    cost JSON NOT NULL,
+                    purchasing JSON NOT NULL,
+                    store_limits JSON NOT NULL,
+                    FOREIGN KEY (store_id) REFERENCES ${StoresDBLibrary.tableName}(s_id)
+                        ON DELETE CASCADE ON UPDATE CASCADE
+                )
+            """).execute()
         }
     }
+
 
     override fun get(tradeId: Int): Trade? {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            TradeDBEntity.findById(id = tradeId)?.let {
+        register()
+        return DatabaseUtils.getConnection().use { conn ->
+            val ps = conn.prepareStatement("SELECT * FROM $tableName WHERE t_id = ?")
+            ps.setInt(1, tradeId)
+            val rs = ps.executeQuery()
+            if (rs.next()) {
                 Trade(
-                    id = it.id.value,
-                    storeId = it.store.id.value,
-                    creator = it.creator,
-                    cost = it.cost,
-                    purchasing = it.purchasing,
-                    storeLimits = it.storeLimits
+                    id = rs.getInt("t_id"),
+                    storeId = rs.getString("store_id"),
+                    creator = kJsonConfig.decodeFromString(
+                        TradeCreator.serializer(),
+                        rs.getString("creator")),
+                    autoRemove = rs.getBoolean("auto_remove"),
+                    cost = kJsonConfig.decodeFromString(
+                        Cost.serializer(),
+                        rs.getString("cost")
+                    ),
+                    purchasing = kJsonConfig.decodeFromString(
+                        Purchasing.serializer(),
+                        rs.getString("purchasing")
+                    ),
+                    storeLimits = kJsonConfig.decodeFromString(
+                        SetSerializer(StoreLimit.serializer()),
+                        rs.getString("store_limits")
+                    )
                 )
+            } else {
+                null
             }
         }
     }
 
-    override fun createTrade(
+    override fun create(
         storeId: String,
         creator: TradeCreator,
+        autoRemove: Boolean,
+        cost: Cost,
+        purchasing: Purchasing,
+        storeLimits: Set<StoreLimit>
+    ): Int {
+        register()
+        val jsonCreator = kJsonConfig.encodeToString(TradeCreator.serializer(),creator)
+        val jsonCost = kJsonConfig.encodeToString(Cost.serializer(),cost)
+        val jsonPurchasing = kJsonConfig.encodeToString(Purchasing.serializer(),purchasing)
+        val jsonLimits = kJsonConfig.encodeToString(SetSerializer(StoreLimit.serializer()),storeLimits.toSet())
+
+        DatabaseUtils.getConnection().use {
+            val stmt = it.prepareStatement("""
+                INSERT INTO $tableName (store_id, creator, auto_remove, cost, purchasing, store_limits)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, java.sql.Statement.RETURN_GENERATED_KEYS)
+
+            stmt.setString(1, storeId)
+            stmt.setString(2, jsonCreator)
+            stmt.setBoolean(3, autoRemove)
+            stmt.setString(4, jsonCost)
+            stmt.setString(5, jsonPurchasing)
+            stmt.setString(6, jsonLimits)
+            stmt.executeUpdate()
+
+            stmt.generatedKeys.use { rs ->
+                return if (rs.next()) rs.getInt(1) else -1 // 返回 t_id 或 -1 表示失败
+            }
+        }
+    }
+
+    override fun getByStoreId(storeId: String): List<Trade> {
+        register()
+        val trades = mutableListOf<Trade>()
+        DatabaseUtils.getConnection().use { conn ->
+            conn.prepareStatement("SELECT * FROM $tableName WHERE store_id = ?").use { stmt ->
+                stmt.setString(1, storeId)
+                stmt.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val tId = rs.getInt("t_id")
+                        val creator = kJsonConfig.decodeFromString(TradeCreator.serializer(),rs.getString("creator"))
+                        val autoRemove = rs.getBoolean("auto_remove")
+                        val cost = kJsonConfig.decodeFromString(Cost.serializer(),rs.getString("cost"))
+                        val purchasing = kJsonConfig.decodeFromString(Purchasing.serializer(),rs.getString("purchasing"))
+                        val storeLimits = kJsonConfig.decodeFromString(SetSerializer(StoreLimit.serializer()),rs.getString("store_limits"))
+                        trades.add(
+                            Trade(
+                                id = tId,
+                                storeId = storeId,
+                                creator = creator,
+                                autoRemove = autoRemove,
+                                cost = cost,
+                                purchasing = purchasing,
+                                storeLimits = storeLimits
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        return trades
+    }
+
+    override fun update(
+        id: Int,
+        storeId: String,
+        creator: TradeCreator,
+        autoRemove: Boolean,
         cost: Cost,
         purchasing: Purchasing,
         storeLimits: Set<StoreLimit>
     ) {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            TradeDBEntity.new{
-                this.store = StoreDBEntity.findById(storeId)!!
-                this.creator = creator
-                this.cost = cost
-                this.purchasing = purchasing
-                this.storeLimits = storeLimits
-            }
-        }
-    }
+        register()
+        val jsonCreator = kJsonConfig.encodeToString(TradeCreator.serializer(),creator)
+        val jsonCost = kJsonConfig.encodeToString(Cost.serializer(),cost)
+        val jsonPurchasing = kJsonConfig.encodeToString(Purchasing.serializer(),purchasing)
+        val jsonLimits = kJsonConfig.encodeToString(SetSerializer(StoreLimit.serializer()),storeLimits.toSet())
 
-    override fun getByStoreId(storeId: String): Collection<Trade> {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            TradeDBEntity.find{
-                TradeDBTable.storeId eq storeId
-            }.map{
-                Trade(
-                    id = it.id.value,
-                    storeId = it.store.id.value,
-                    creator = it.creator,
-                    cost = it.cost,
-                    purchasing = it.purchasing,
-                    storeLimits = it.storeLimits
-                )
-            }
+        DatabaseUtils.getConnection().use {
+            val stmt = it.prepareStatement("""
+                UPDATE $tableName
+                SET creator = ?,store_id =?, auto_remove = ?, cost = ?, purchasing = ?, store_limits = ?
+                WHERE t_id = ?
+            """)
+            stmt.setString(1, jsonCreator)
+            stmt.setString(2, storeId)
+            stmt.setBoolean(3, autoRemove)
+            stmt.setString(4, jsonCost)
+            stmt.setString(5, jsonPurchasing)
+            stmt.setString(6, jsonLimits)
+            stmt.setInt(7, id)
+
+            stmt.executeUpdate() // 返回修改的行数（可能为 0）
         }
     }
 
     override fun update(trade: Trade) {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            TradeDBTable.update({ TradeDBTable.id.eq(trade.id) }){
-                it[this.storeId] = trade.storeId
-                it[this.creator] = trade.creator
-                it[this.cost] = trade.cost
-                it[this.purchasing] = trade.purchasing
-                it[this.storeLimits] = trade.storeLimits
-            }
-        }
+        update(
+            trade.id,
+            trade.storeId,
+            trade.creator,
+            trade.autoRemove,
+            trade.cost,
+            trade.purchasing,
+            trade.storeLimits
+        )
     }
 
     override fun removeById(id: Int) {
-        return transaction(db = DatabaseUtils.DATABASE) {
-            TradeDBTable.deleteWhere { TradeDBTable.id eq id }
+        register()
+        DatabaseUtils.getConnection().use {
+            val stmt = it.prepareStatement("DELETE FROM $tableName WHERE t_id = ?")
+            stmt.setInt(1, id)
+            stmt.executeUpdate()
+        }
+    }
+
+    override fun register() {
+        if (valid && !exists()){
+            createTable()
         }
     }
 }

@@ -9,8 +9,20 @@ interface DAO {
         get() = true
 
     interface DBDAO : DAO{
+
+        val tableName : String
+
         override val valid: Boolean
             get() = DatabaseUtils.DATABASE_VALID
+
+
+        fun exists(): Boolean {
+            return DatabaseUtils.tableExists(this)
+        }
+
+        fun createTable()
+
+        fun register()
     }
 
     interface JsonDAO : DAO{

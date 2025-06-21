@@ -6,15 +6,10 @@ interface StoresLibrary : DAO {
 
     operator fun get(sid : String) : Store?
 
-    fun create(
+    fun createOrUpdate(
         id : String,
-        name : String,
-        description: String? = null
+        name : String
         )
 
-    fun update(id : String, store : Store)
-
     fun removeById(id : String)
-
-    fun register(){}
 }

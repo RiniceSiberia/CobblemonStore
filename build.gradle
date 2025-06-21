@@ -183,50 +183,58 @@ dependencies {
         }
     }
 
-    var exposedVersion = "0.61.0"
+//    additionalRuntimeClasspath(implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1"))
+//    jarJar("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1") {
+//        version {
+//            strictly("[1.8.0,)")
+//            prefer("1.8.1")
+//        }
+//    }
 
-    var exposedRange = "[0.48.0,)"
-
-    var exposedPath = "org.jetbrains.exposed:exposed-"
+//    var exposedVersion = "0.61.0"
+//
+//    var exposedRange = "[0.48.0,)"
+//
+//    var exposedPath = "org.jetbrains.exposed:exposed-"
 
 //    compileOnly(exposedPath + "core:" + exposedVersion)
 //    compileOnly(exposedPath + "dao:" + exposedVersion)
 //    compileOnly(exposedPath + "jdbc:" + exposedVersion)
 //    compileOnly(exposedPath + "json:" + exposedVersion)
 
-    additionalRuntimeClasspath(implementation(exposedPath+"core:"+exposedVersion))
-    jarJar(exposedPath+"core:"+exposedVersion) {
-        transitive = false
-        version {
-            strictly(exposedRange)
-            prefer(exposedVersion)
-        }
-    }
-    additionalRuntimeClasspath(implementation(exposedPath+"dao:"+exposedVersion))
-    jarJar(exposedPath+"dao:"+exposedVersion) {
-        transitive = false
-        version {
-            strictly(exposedRange)
-            prefer(exposedVersion)
-        }
-    }
-    additionalRuntimeClasspath(implementation(exposedPath+"jdbc:"+exposedVersion))
-    jarJar(exposedPath+"jdbc:"+exposedVersion) {
-        transitive = false
-        version {
-            strictly(exposedRange)
-            prefer(exposedVersion)
-        }
-    }
-
-    additionalRuntimeClasspath(implementation(exposedPath+"json:"+exposedVersion))
-    jarJar(exposedPath+"json:"+exposedVersion) {
-        transitive = false
-        version {
-            strictly(exposedRange)
-            prefer(exposedVersion)
-        }
-    }
+//    additionalRuntimeClasspath(implementation(exposedPath+"core:"+exposedVersion))
+//    jarJar(exposedPath+"core:"+exposedVersion) {
+//        transitive = false
+//        version {
+//            strictly(exposedRange)
+//            prefer(exposedVersion)
+//        }
+//    }
+//    additionalRuntimeClasspath(implementation(exposedPath+"dao:"+exposedVersion))
+//    jarJar(exposedPath+"dao:"+exposedVersion) {
+//        transitive = false
+//        version {
+//            strictly(exposedRange)
+//            prefer(exposedVersion)
+//        }
+//    }
+//    additionalRuntimeClasspath(implementation(exposedPath+"jdbc:"+exposedVersion))
+//    jarJar(exposedPath+"jdbc:"+exposedVersion) {
+//        transitive = false
+//        version {
+//            strictly(exposedRange)
+//            prefer(exposedVersion)
+//        }
+//    }
+//
+//    additionalRuntimeClasspath(implementation(exposedPath+"json:"+exposedVersion))
+//    jarJar(exposedPath+"json:"+exposedVersion) {
+//        transitive = false
+//        version {
+//            strictly(exposedRange)
+//            prefer(exposedVersion)
+//        }
+//    }
 
 
     additionalRuntimeClasspath(implementation("com.zaxxer:HikariCP:6.3.0"))
@@ -239,10 +247,10 @@ dependencies {
     }
 
 
-    implementation("thedarkcolour:kfflang-neoforge:5.8.0")
-    implementation("thedarkcolour:kfflib-neoforge:5.8.0")
-    implementation("thedarkcolour:kffmod-neoforge:5.8.0")
-//    implementation 'thedarkcolour:kotlinforforge-neoforge:5.8.0'
+//    implementation("thedarkcolour:kfflang-neoforge:5.8.0")
+//    implementation("thedarkcolour:kfflib-neoforge:5.8.0")
+//    implementation("thedarkcolour:kffmod-neoforge:5.8.0")
+    implementation 'thedarkcolour:kotlinforforge-neoforge:5.8.0'
     implementation('io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT')
     implementation "curse.maven:architectury-api-419699:5786327"
 

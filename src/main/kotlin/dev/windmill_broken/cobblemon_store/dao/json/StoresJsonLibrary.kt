@@ -19,19 +19,13 @@ object StoresJsonLibrary : ConcurrentHashMap<String, Store>(), StoresLibrary, DA
 
     override fun get(sid: String): Store? = super.get(sid)
 
-    override fun create(
+    override fun createOrUpdate(
         id: String,
-        name: String,
-        description: String?
+        name: String
 
     ) {
-        val store = Store(id,name,description)
+        val store = Store(id,name)
         this[store.id] = store
-    }
-
-    override fun update(id: String, store: Store){
-        this[id] = store
-        save()
     }
 
     override fun removeById(id: String) {

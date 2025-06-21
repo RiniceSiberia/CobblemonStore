@@ -153,7 +153,8 @@ class ExpirableStoreLimit(
     override fun getTooltipComponent(player: Player): MutableComponent {
         return TimeUtils.getExpiredText(
             expirationTime,
-            "item.cobblemon_store.sell_menu.slot.reserve.time_limit"
+            "item.cobblemon_store.sell_menu.slot.reserve.expire",
+            "item.cobblemon_store.sell_menu.slot.reserve.expired"
         )
     }
 
